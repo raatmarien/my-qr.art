@@ -1,7 +1,20 @@
-from django.shortcuts import HttpResponse
+from django.shortcuts import HttpResponse, redirect
+from django.http import HttpResponseRedirect
+from urllib.parse import unquote
+
+from .models import RedirectItem, to_from_identifier
 
 
-# Create your views here.
-def redirect(request):
-    return HttpResponse(
-        f'Hello redirect url {request.get_full_path()}')
+def redirect_action(request):
+    path = unquote(request.get_full_path())[3:]
+    from_identifier = to_from_identifier(path)
+    matches = RedirectItem.objects.filter(from_identifier=from_identifier)
+    print('FROM REQUEST:')
+    print(from_identifier)
+    print('FROM DB:')
+    print(RedirectItem.objects.all()[1].from_identifier)
+    if matches.count() > 0:
+        return redirect(matches.first().to_url)
+    else:
+        return HttpResponse(
+            f'Redirect url not found:</br>{from_identifier}')
