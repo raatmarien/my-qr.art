@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import my_qr_art.local_settings as l
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'n_!=%bx3=^o0t4df^cmd5%$5d-8d%_vgmdcwq-ia7be4g=1zf0'
+SECRET_KEY = l.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = l.DEBUG
 
-ALLOWED_HOSTS = ['my-qr.art', 'www.my-qr.art', 'localhost']
+ALLOWED_HOSTS = l.ALLOWED_HOSTS
 
 
 # Application definition
@@ -114,8 +116,6 @@ USE_L10N = True
 
 USE_TZ = True
 
+STATIC_URL = l.STATIC_URL
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-STATIC_URL = '/static/'
+STATICFILES_DIRS = l.STATICFILES_DIRS
