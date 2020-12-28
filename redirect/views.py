@@ -9,10 +9,6 @@ def redirect_action(request):
     path = unquote(request.get_full_path())[3:]
     from_identifier = to_from_identifier(path)
     matches = RedirectItem.objects.filter(from_identifier=from_identifier)
-    print('FROM REQUEST:')
-    print(from_identifier)
-    print('FROM DB:')
-    print(RedirectItem.objects.all()[1].from_identifier)
     if matches.count() > 0:
         return redirect(matches.first().to_url)
     else:
