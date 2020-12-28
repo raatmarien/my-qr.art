@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'redirect.apps.RedirectConfig',
+    'qr_app.apps.QrAppConfig',
 ]
 
 MIDDLEWARE = [
