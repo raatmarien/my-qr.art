@@ -51,7 +51,7 @@ def add_qr_redirect(qr, url):
     index = qr.data.index(b'/R/')
     ident = qr.data[index+3:-3]
     r = RedirectItem.objects.create(
-        from_identifier=ident, to_url=url,
+        from_identifier=ident.decode('UTF-8'), to_url=url,
         created_at=datetime.datetime.now())
     r.save()
 
