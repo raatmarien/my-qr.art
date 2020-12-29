@@ -1,8 +1,11 @@
 from django.shortcuts import HttpResponse, render
 import tempfile
+import datetime
 
 import qr_app.qrmap as qrmap
 from .forms import CreateQRForm
+
+from redirect.models import RedirectItem
 
 
 # Create your views here.
@@ -44,6 +47,15 @@ def save_file(f):
     return filename
 
 
+def add_qr_redirect(qr, url):
+    index = qr.data.index(b'/R/')
+    ident = qr.data[index+3:-3]
+    r = RedirectItem.objects.create(
+        from_identifier=ident, to_url=url,
+        created_at=datetime.datetime.now())
+    r.save()
+
+
 def create_qr(request):
     if request.method == 'POST':
         form = CreateQRForm(request.POST, request.FILES)
@@ -55,6 +67,9 @@ def create_qr(request):
 
             qrfile = get_temp_name()
             qr.png(qrfile, scale=5)
+
+            add_qr_redirect(qr, request.POST['qrurl'])
+
             with open(qrfile, "rb") as f:
                 return HttpResponse(f.read(), content_type="image/png")
         else:

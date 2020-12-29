@@ -18,6 +18,7 @@ def redirect_action(request):
     if matches.count() > 0:
         m = matches.first()
         m.visits += 1
+        m.save()
         return redirect(matches.first().to_url)
     else:
         return HttpResponse(
