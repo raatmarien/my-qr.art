@@ -73,9 +73,10 @@ class QrMap:
         for (i, size) in enumerate(t.version_size):
             if size == self.size:
                 return i
+        raise ValueError('Size not found!')
 
-    def read(filename):
-        (width, height, rows, info) = png.Reader(file=open(filename, 'rb')).read()
+    def read_file(f):
+        (width, height, rows, info) = png.Reader(file=f).read()
         qr = QrMap(1, ModuleType.BLOCKED)
         qr.size = width
         qr.qr = [ModuleType.BLOCKED] * (qr.size * qr.size)
@@ -88,6 +89,9 @@ class QrMap:
                 x += 1
             y += 1
         return qr
+
+    def read(filename):
+        return QrMap.read_file(open(filename, 'rb'))
 
 
 def add_square(qr, x, y, size, value=ModuleType.BLOCKED):
@@ -228,8 +232,9 @@ def interleave_path(path, version, error):
     return interleaved_path
 
 
-def get_raw_qr_data(filename, version, error='L', mode='binary'):
+def get_raw_qr_data(filename, error='L', mode='binary'):
     design = QrMap.read(filename)
+    version = design.get_version()
     qrmap = get_qr_map(version, error=error, mode=mode)
 
     # We take the path with the reserved parts,
@@ -247,15 +252,13 @@ def get_raw_qr_data(filename, version, error='L', mode='binary'):
                      if design.get_with_mask(x, y) == ModuleType.AVAILABLE
                      else '0')
 
-    return data
+    return (data, version)
 
-
-def create_qr_from_design(filename, url, version, mode, error):
-    bits = get_raw_qr_data(filename, version, error, mode)
+def create_qr_from_design(filename, url, mode, error):
+    (bits, version) = get_raw_qr_data(filename, error, mode)
     string = (bitstring_to_bin(bits) if mode == 'binary'
               else bitstring_to_alphanumeric(bits))
     with_url = url + '/' + string[(len(url)+1):]
-    print(with_url)
     qr = pyqrcode.create(with_url, error=error, mode=mode, version=version)
     return qr
 
@@ -280,8 +283,6 @@ def bitstring_to_alphanumeric(s):
         num = int(part, 2)
         c1 = min(44, num // 45)
         c2 = num % 45
-        print(c1)
-        print(c2)
         text += find_table_char(c1) + find_table_char(c2)
 
     if len(s) >= 6:
@@ -292,15 +293,3 @@ def bitstring_to_alphanumeric(s):
 
 def bitstring_to_bin(s):
     return bitstring_to_bytes(s).decode('ISO 8859-1')
-
-
-def test():
-    return run_test('xr-3.png', 32, 'binary', 'L')
-
-
-def run_test(filename, version, mode, error):
-    s = get_raw_qr_data(filename, version, error, mode)
-    qr = pyqrcode.create(bitstring_to_bin(s), error=error,
-                         mode=mode, version=version)
-    print(qr.terminal())
-    return qr
