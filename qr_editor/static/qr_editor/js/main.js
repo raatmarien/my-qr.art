@@ -32,7 +32,9 @@ class Canvas {
     this.steps = [];
     this.redo_arr = [];
     this.frames = [];
-    this.clickListener =  e => {
+    this.downListener =  e => {
+      console.log("down");
+      this.active = true;
       var rect = this.canvas.getBoundingClientRect();
       var x = e.clientX - rect.left;
       var y = e.clientY - rect.top;
@@ -47,15 +49,26 @@ class Canvas {
         this.drawReserved();
       }
     };
-    this.canvas.addEventListener("click", this.clickListener);
-
-    this.mousemoveListener = e => {
+    this.canvas.addEventListener("mousedown", this.downListener);
+    this.canvas.addEventListener("touchstart", this.downListener);
+    this.moveListener = e => {
+      console.log("move");
       if (this.active) {
         var rect = this.canvas.getBoundingClientRect();
-        var x = e.clientX - rect.left;
-        var y = e.clientY - rect.top;
+        var placeX, placeY;
+        if (e.clientX) {
+          placeX = e.clientX;
+          placeY = e.clientY;
+        } else {
+          placeX = e.touches[0].clientX;
+          placeY = e.touches[0].clientY;
+        }
+        console.log(placeX, placeY);
+        var x = placeX - rect.left;
+        var y = placeY - rect.top;
         x = Math.floor(this.width * x / this.canvas.clientWidth);
         y = Math.floor(this.height * y / this.canvas.clientHeight);
+        console.log(e);
         let tool = this.getTool(tools);
         let color = this.color;
         let step = [x, y, tool, color];
@@ -66,31 +79,15 @@ class Canvas {
         }
       }
     };
-    this.canvas.addEventListener("mousemove", this.mousemoveListener);
+    this.canvas.addEventListener("mousemove", this.moveListener);
+    this.canvas.addEventListener("touchmove", this.moveListener)
 
-    this.touchmoveListener = e => {
-      var rect = this.canvas.getBoundingClientRect();
-      var x = e.touches[0].clientX - rect.left;
-      var y = e.touches[0].clientY - rect.top;
-      x = Math.floor(this.width * x / this.canvas.clientWidth);
-      y = Math.floor(this.height * y / this.canvas.clientHeight);
-      let tool = this.getTool(tools);
-      let color = this.color;
-      let step = [x, y, tool, color];
-      if (tool == tool.Tool.pen && this.doStep(step)) {
-        this.steps.push(step);
-        this.redo_arr = [];
-        this.drawReserved();
-      }
-    };
-    this.canvas.addEventListener("touchmove", this.touchmoveListener)
-
-    this.canvas.addEventListener("mousedown", e => {
-      this.active = true;
-    });
-    this.canvas.addEventListener("mouseup", e => {
+    this.upListener = e => {
+      console.log("up");
       this.active = false;
-    });
+    };
+    this.canvas.addEventListener("mouseup", this.upListener);
+    this.canvas.addEventListener("touchend", this.upListener);
   }
 
   setQrMap(map) {
@@ -242,9 +239,12 @@ class Canvas {
   }
 
   removeListeners() {
-    this.canvas.removeEventListener('click', this.clickEventListener, false);
-    this.canvas.removeEventListener('mousemove', this.mousemoveListener, false);
-    this.canvas.removeEventListener('touchmove', this.touchmoveListener, false);
+    this.canvas.removeEventListener('mousedown', this.downListener, false);
+    this.canvas.removeEventListener('touchstart', this.downListener, false);
+    this.canvas.removeEventListener('mousemove', this.moveListener, false);
+    this.canvas.removeEventListener('touchmove', this.moveListener, false);
+    this.canvas.removeEventListener('mouseup', this.upListener, false);
+    this.canvas.removeEventListener('touchend', this.upListener, false);
   }
 
   addImage() {
