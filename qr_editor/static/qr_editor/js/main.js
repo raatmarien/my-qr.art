@@ -7,7 +7,7 @@ var Tool = {
   // "addFrame": 6,
   "undo": 2,
   "redo": 3,
-  "clearCanvas": 4
+  "clearCanvas": 4,
 };
 var tools = [true, false, false, false, false];
 var lc = [];
@@ -32,9 +32,10 @@ class Canvas {
     this.steps = [];
     this.redo_arr = [];
     this.frames = [];
+    this.prevStep = null;
     this.downListener =  e => {
-      console.log("down");
       this.active = true;
+      this.steps.push([0, 0, "down", 0]);
       var rect = this.canvas.getBoundingClientRect();
       var x = e.clientX - rect.left;
       var y = e.clientY - rect.top;
@@ -48,11 +49,11 @@ class Canvas {
         this.redo_arr = [];
         this.drawReserved();
       }
+      this.prevStep = step;
     };
     this.canvas.addEventListener("mousedown", this.downListener);
     this.canvas.addEventListener("touchstart", this.downListener);
     this.moveListener = e => {
-      console.log("move");
       if (this.active) {
         var rect = this.canvas.getBoundingClientRect();
         var placeX, placeY;
@@ -63,31 +64,37 @@ class Canvas {
           placeX = e.touches[0].clientX;
           placeY = e.touches[0].clientY;
         }
-        console.log(placeX, placeY);
         var x = placeX - rect.left;
         var y = placeY - rect.top;
         x = Math.floor(this.width * x / this.canvas.clientWidth);
         y = Math.floor(this.height * y / this.canvas.clientHeight);
-        console.log(e);
         let tool = this.getTool(tools);
         let color = this.color;
         let step = [x, y, tool, color];
+
+
         if (tool == Tool.pen && this.doStep(step)) {
           this.steps.push(step);
           this.redo_arr = [];
           this.drawReserved();
         }
+        this.prevStep = step;
       }
     };
     this.canvas.addEventListener("mousemove", this.moveListener);
     this.canvas.addEventListener("touchmove", this.moveListener)
 
     this.upListener = e => {
-      console.log("up");
-      this.active = false;
+      if (this.active) {
+        this.prevStep = null;
+        this.steps.push([0, 0, "up", 0]);
+        this.active = false;
+      }
     };
     this.canvas.addEventListener("mouseup", this.upListener);
     this.canvas.addEventListener("touchend", this.upListener);
+    window.addEventListener("mouseup", this.upListener);
+    window.addEventListener("touchend", this.upListener);
   }
 
   setQrMap(map) {
@@ -120,7 +127,11 @@ class Canvas {
   }
 
   redraw() {
-    this.steps.forEach(s => this.doStep(s));
+    this.steps.forEach(s => {
+      this.doStep(s)
+      this.prevStep = s;
+    });
+    this.active = false;
     this.drawReserved();
   }
 
@@ -130,9 +141,45 @@ class Canvas {
     if (tool == Tool.clearCanvas) {
       this.doClear();
     } else if (tool == Tool.pen) {
-      return this.draw(x, y, color);
+      if (this.active && tool == Tool.pen && this.prevStep && this.prevStep[2] == Tool.pen) {
+        let prevX = this.prevStep[0],
+            prevY = this.prevStep[1];
+        let minX = Math.min(prevX, x);
+        let minY = Math.min(prevY, y);
+        let maxX = Math.max(prevX, x);
+        let maxY = Math.max(prevY, y);
+        let difX = maxX - minX;
+        let difY = maxY - minY;
+        if (difX > difY && difX > 1) {
+          let fromY = prevY, toY = y;
+          if (prevX > x) {
+            fromY = y;
+            toY = prevY;
+          }
+          for (let fillX = minX; fillX <= maxX; fillX++) {
+            let fillY = Math.round(fromY + (((fillX - minX) / difX) * (toY - fromY)))
+            this.draw(fillX, fillY, color);
+          }
+        } else if (difY > 1) {
+          let fromX = prevX, toX = x;
+          if (prevY > y) {
+            fromX = x;
+            toX = prevX;
+          }
+          for (let fillY = minY; fillY <= maxY; fillY++) {
+            let fillX = Math.round(fromX + (((fillY - minY) / difY) * (toX - fromX)))
+            this.draw(fillX, fillY, color);
+          }
+        }
+      }
+      let result = this.draw(x, y, color);
+      return result;
     } else if (tool == Tool.fillBucket) {
       this.floodFill(x, y, this.data[x][y], color);
+    } else if (tool == "down") {
+      this.active = true;
+    } else if (tool == "up") {
+      this.active = false;
     }
     return true;
   }
@@ -208,7 +255,12 @@ class Canvas {
   undo() {
     if (this.steps.length > 0) {
       this.doClear();
-      this.redo_arr.push(this.steps.pop());
+      while (true) {
+        let popStep = this.steps.pop();
+        console.log(popStep);
+        this.redo_arr.push(popStep);
+        if (popStep[2] == "down") break;
+      }
       this.redraw();
     }
   }
@@ -216,7 +268,11 @@ class Canvas {
   redo() {
     if (this.redo_arr.length > 0) {
       this.doClear();
-      this.steps.push(this.redo_arr.pop());
+      while (this.redo_arr.length > 0) {
+        let popStep = this.redo_arr.pop();
+        this.steps.push(popStep);
+        if (popStep[2] == "up") break;
+      }
       this.redraw();
     }
   }
@@ -245,6 +301,8 @@ class Canvas {
     this.canvas.removeEventListener('touchmove', this.moveListener, false);
     this.canvas.removeEventListener('mouseup', this.upListener, false);
     this.canvas.removeEventListener('touchend', this.upListener, false);
+    window.removeEventListener("mouseup", this.upListener);
+    window.removeEventListener("touchend", this.upListener);
   }
 
   addImage() {
