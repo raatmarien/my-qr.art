@@ -44,11 +44,10 @@ class Canvas {
       let tool = this.getTool(tools);
       let color = this.color;
       let step = [x, y, tool, color];
-      if (this.doStep(step)) {
-        this.steps.push(step);
-        this.redo_arr = [];
-        this.drawReserved();
-      }
+      this.doStep(step)
+      this.steps.push(step);
+      this.redo_arr = [];
+      this.drawReserved();
       this.prevStep = step;
     };
     this.canvas.addEventListener("mousedown", this.downListener);
@@ -73,11 +72,10 @@ class Canvas {
         let step = [x, y, tool, color];
 
 
-        if (tool == Tool.pen && this.doStep(step)) {
-          this.steps.push(step);
-          this.redo_arr = [];
-          this.drawReserved();
-        }
+        this.doStep(step);
+        this.steps.push(step);
+        this.redo_arr = [];
+        this.drawReserved();
         this.prevStep = step;
       }
     };
