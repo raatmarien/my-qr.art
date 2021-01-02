@@ -167,7 +167,7 @@ def get_path(qr, allowed_modules=[ModuleType.AVAILABLE]):
                     x += 1
 
 
-def get_qr_map(version, mode='binary', error='L'):
+def get_qr_map(version, mode='binary', error='L', url=''):
     """Returns a 2d array of the size of an qr code of the version.
     Where we can write data it puts True. Everywhere else is False.
     """
@@ -213,7 +213,10 @@ def get_qr_map(version, mode='binary', error='L'):
     if version > 26:
         dlversion = 40
     count_size = t.data_length_field[dlversion][t.modes[mode]]
-    skipped = mode_size + count_size
+    url_size = (int(len(url) / 2.0 * 11.0)
+                if mode == 'alphanumeric'
+                else (len(url) * 8))
+    skipped = mode_size + count_size + url_size
 
     data_size = t.data_capacity[version][error][0]
 

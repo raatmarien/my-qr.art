@@ -27,7 +27,7 @@ def qr_template(request):
     if version < 1 or version > 40:
         return HttpResponse('version should be between 1 and 40')
 
-    qr_map = qrmap.get_qr_map(version, 'alphanumeric', 'L')
+    qr_map = qrmap.get_qr_map(version, 'alphanumeric', 'L', 'https://my-qr.art/r/')
     filename = '/tmp/' + next(tempfile._get_candidate_names()) + '.png'
     qr_map.save(filename)
 

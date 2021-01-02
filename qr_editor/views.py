@@ -8,5 +8,6 @@ def index(request):
 
 
 def get_qr_template(request):
-    qr = qrmap.get_qr_map(int(request.POST['version']), "alphanumeric", 'L')
+    qr = qrmap.get_qr_map(int(request.POST['version']),
+                          "alphanumeric", 'L', 'https://my-qr.art/r/')
     return JsonResponse(qr.to_json_rep())
