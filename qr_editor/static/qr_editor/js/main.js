@@ -9,7 +9,7 @@ var Tool = {
   "redo": 3,
   "clearCanvas": 4
 };
-var tools = [true, false, false, false, false, false];
+var tools = [true, false, false, false, false];
 var lc = [];
 class Canvas {
   constructor(width, height) {
@@ -36,40 +36,13 @@ class Canvas {
       var y = e.clientY - rect.top;
       x = Math.floor(this.width * x / this.canvas.clientWidth);
       y = Math.floor(this.height * y / this.canvas.clientHeight);
-      if (tools[Tool.fillBucket]) {
-        filler(x, y, this.data[x][y]);
-      } else if (tools[Tool.eraser]) {
-        var temp = this.color;
-        var tga = this.ctx.globalAlpha;
-        this.setcolor([255, 255, 255, 255]);
-        this.draw(x, y);
-        this.setcolor(temp);
-        this.ctx.globalAlpha = tga;
-      } else if (tools[Tool.line]) {
-        lc.push(new Point(x, y));
-        if (lc.length == 2) {
-          var lp = line(lc[0], lc[1]);
-          lc = [];
-          var p;
-          for (p of lp) this.draw(p.x, p.y);
-        }
-      } else if (tools[Tool.circle]) {
-        var centre = new Point(x, y);
-        var radius = +prompt("radius?");
-        var lp = circle(radius, centre);
-        var p;
-        for (p of lp) this.draw(p.x, p.y);
-      } else if (tools[Tool.ellipse]) {
-        var center = new Point(x, y);
-        var radiusX = +prompt("X radius?");
-        var radiusY = +prompt("Y radius?");
-        var lp = ellipse(radiusX, radiusY, center);
-        for (p of lp)
-          this.draw(p.x, p.y);
-      } else {
-        this.draw(x, y);
+      let tool = this.getTool(tools);
+      let color = this.color;
+      let step = [x, y, tool, color];
+      if (this.doStep(step)) {
+        this.steps.push(step);
+        this.redo_arr = [];
       }
-
     });
 
     this.canvas.addEventListener("mousemove", e => {
@@ -79,11 +52,12 @@ class Canvas {
         var y = e.clientY - rect.top;
         x = Math.floor(this.width * x / this.canvas.clientWidth);
         y = Math.floor(this.height * y / this.canvas.clientHeight);
-        if(tools[Tool.pen]){
-          this.draw(x, y)
-        }
-        else if(tools[Tool.eraser]){
-          this.erase(x, y);
+        let tool = this.getTool(tools);
+        let color = this.color;
+        let step = [x, y, tool, color];
+        if (tool == Tool.pen && this.doStep(step)) {
+          this.steps.push(step);
+          this.redo_arr = [];
         }
       }
     });
@@ -94,11 +68,12 @@ class Canvas {
       var y = e.touches[0].clientY - rect.top;
       x = Math.floor(this.width * x / this.canvas.clientWidth);
       y = Math.floor(this.height * y / this.canvas.clientHeight);
-      if(tools[Tool.pen]){
-        this.draw(x, y);
-      }
-      else if(tools[Tool.eraser]){
-        this.erase(x, y);
+      let tool = this.getTool(tools);
+      let color = this.color;
+      let step = [x, y, tool, color];
+      if (tool == tool.Tool.pen && this.doStep(step)) {
+        this.steps.push(step);
+        this.redo_arr = [];
       }
     })
 
@@ -109,21 +84,56 @@ class Canvas {
       this.active = false;
     });
   }
-  draw(x, y, count) {
+
+  getTool(tools) {
+    for (var i = 0; i < tools.length; i++)
+      if (tools[i]) return i;
+  }
+
+  doStep(step) {
+    let x = step[0], y = step[1],
+        tool = step[2], color = step[3];
+    if (tool == Tool.clearCanvas) {
+      this.doClear();
+    } else if (tool == Tool.pen) {
+      return this.draw(x, y, color);
+    } else if (tool == Tool.fillBucket) {
+      this.floodFill(x, y, this.data[x][y], color);
+    }
+    return true;
+  }
+  
+  draw(x, y, color) {
     if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
-      this.data[x][y] = this.color;
+      let changed = !this.colorEquals(this.data[x][y], color);
+      this.data[x][y] = color;
+      this.ctx.fillStyle = "rgba(" + color[0] + "," + color[1] + "," + color[2] + "," + color[3] + ")";
       this.ctx.fillRect(Math.floor(x * (this.w / this.width)), Math.floor(y * (this.h / this.height)), Math.floor(this.w / this.width), Math.floor(this.h / this.height));
-      if (!count && JSON.stringify(this.steps[this.steps.length-1])!==JSON.stringify([x,y,this.color,this.ctx.globalAlpha])) this.steps.push([x,y,this.color,this.ctx.globalAlpha]);
+      return changed;
     }
   }
-  erase(x, y){
-    var temp = this.color;
-    var tga = this.ctx.globalAlpha;
-    this.setcolor([255, 255, 255, 255]);
-    this.draw(x, y);
-    this.setcolor(temp);
-    this.ctx.globalAlpha = tga;
+
+  colorEquals(c1, c2) {
+    return JSON.stringify(c1) == JSON.stringify(c2);
   }
+
+  floodFill(x, y, targetColor, replacementColor) {
+    if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+      return;
+    }
+    if (this.colorEquals(targetColor, replacementColor)) {
+      return;
+    }
+    if (!this.colorEquals(this.data[x][y], targetColor)) {
+      return;
+    }
+    this.draw(x, y, replacementColor);
+    this.floodFill(x + 1, y, targetColor, replacementColor);
+    this.floodFill(x, y + 1, targetColor, replacementColor);
+    this.floodFill(x - 1, y, targetColor, replacementColor);
+    this.floodFill(x, y - 1, targetColor, replacementColor);
+  }
+  
   setcolor(color) {
     this.ctx.globalAlpha = 1;
     this.color = color;
@@ -148,6 +158,12 @@ class Canvas {
   }
 
   clear() {
+    let step = [0, 0, Tool.clearCanvas, [255, 255, 255, 255]];
+    this.doStep(step);
+    this.steps.push(step);
+  }
+
+  doClear() {
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, this.w, this.h);
     this.data = [...Array(this.width)].map(e => Array(this.height).fill([255, 255, 255, 255]));
@@ -155,52 +171,24 @@ class Canvas {
     this.setmode(Tool.pen);
   }
 
-  addFrame(data=null) {
-    var img = new Image();
-    img.src = data || this.canvas.toDataURL();
-    this.frames.push([img,this.data.map(inner => inner.slice())]);
-  }
-
-  deleteFrame(f) {
-    this.frames.splice(f,1);
-  }
-
-  loadFrame(f) {
-    this.clear();
-    var img = this.frames[f][1];
-    var tmp_color = this.color;
-    var tmp_alpha = this.ctx.globalAlpha;
-    this.ctx.globalAlpha = 1;
-    var i,j;
-    for (i=0; i<this.width; i++) {
-      for (j=0; j<this.height; j++) {
-  	this.setcolor(img[i][j]);
-  	this.draw(i,j);
-      }
-    }
-    this.setcolor(tmp_color);
-    this.ctx.globalAlpha = tmp_alpha;
-  }
-
   undo() {
-    this.clear();
-    this.redo_arr.push(this.steps.pop());
-    var step;
-    this.steps.forEach(step => {
-      this.setcolor(step[2]);
-      this.ctx.globalAlpha = step[3];
-      this.draw(step[0],step[1],true);
-    });
+    if (this.steps.length > 0) {
+      this.doClear();
+      this.redo_arr.push(this.steps.pop());
+      this.steps.forEach(step => {
+        this.doStep(step);
+      });
+    }
   }
 
   redo() {
-    this.steps.push(this.redo_arr.pop());
-    var step;
-    this.steps.forEach(step => {
-      this.setcolor(step[2]);
-      this.ctx.globalAlpha = step[3];
-      this.draw(step[0],step[1],true);
-    });
+    if (this.redo_arr.length > 0) {
+      this.doClear();
+      this.steps.push(this.redo_arr.pop());
+      this.steps.forEach(step => {
+        this.doStep(step);
+      });
+    }
   }
 
   saveInLocal(){
@@ -246,8 +234,7 @@ class Canvas {
               var pix = pxctx.getImageData(10*i, 10*j, 10, 10).data;
               pix.forEach((x,k) => {avg[k%4]+=x; if (k%4==0) ctr++;});
               avg = avg.map(x=>~~(x/ctr));
-              _this.setcolor(avg);
-              _this.draw(i,j);
+              _this.draw(i,j, avg);
             }
     	  }
         }
@@ -307,8 +294,9 @@ window.onload = function () {
     });
 
     window.board.steps = data.steps;
+    window.board.setcolor([0, 0, 0, 255]);
+    window.board.steps.forEach(s => window.board.doStep(s));
     window.board.redo_arr = data.redo_arr;
-    window.board.setcolor(data.currColor);
   }
   else {
     newProject();
@@ -335,17 +323,6 @@ function newProject(){
     [0, 0, 0, 255],
     [255, 255, 255, 255]
   ];
-}
-function filler(x, y, cc) {
-  if (x >= 0 && x < board.width && y >= 0 && y < board.height) {
-    if (JSON.stringify(board.data[x][y]) == JSON.stringify(cc) && JSON.stringify(board.data[x][y]) != JSON.stringify(board.color)) {
-      board.draw(x, y);
-      filler(x + 1, y, cc);
-      filler(x, y + 1, cc);
-      filler(x - 1, y, cc);
-      filler(x, y - 1, cc);
-    }
-  }
 }
 
 window.onbeforeunload = function () {
