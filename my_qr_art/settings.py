@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'redirect.apps.RedirectConfig',
     'qr_app.apps.QrAppConfig',
+    'qr_editor.apps.QrEditorConfig',
+    'fontawesome-free',
 ]
 
 MIDDLEWARE = [

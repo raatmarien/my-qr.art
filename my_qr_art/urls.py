@@ -21,4 +21,5 @@ urlpatterns = [
     path('R/', include('redirect.urls')),
     path('r/', include('redirect.urls')),
     path('', include('qr_app.urls')),
+    path('editor/', include('qr_editor.urls')),
 ]
