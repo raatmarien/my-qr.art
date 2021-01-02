@@ -7,7 +7,9 @@
     <script src="{% static 'qr_editor/js/Shapes.js' %}" async></script>
     <script src="{% static 'qr_editor/js/Transformation.js' %}" async></script>
     <script src="{% static 'fontawesome_free/js/all.min.js'%}"></script>
-  <link rel="stylesheet" type="text/css" href="{% static 'qr_editor/css/style.css' %}">
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'qr_editor/js/main.js' %}" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'qr_editor/css/style.css' %}">
   </head>
   <body>
     <div class="menubtn">☰</div>
@@ -19,8 +21,9 @@
       <li><a href="https://github.com/rgab1508/PixelCraft" target="_blank"><i class="fab fa-github"></i>Github</a></li>
     </ul>
     <div id="popup">
-      <h3>Select the Dimensions Of the grid</h3>
-      <input type="text" id="width" value="16">X<input type="text" id="height" value="16">
+      {% csrf_token %}
+      <h3>Select the size of the QR code</h3>
+      <input type="number" id="version" value="10" min="1" max="40"> Version
       <button id="close">OK</button>
     </div>
     <div id="frames" onblur="Frames.close()" tabindex="0">
@@ -37,10 +40,9 @@
   <span class="item tool-item" onclick="board.setmode(1)"><i class="fas fa-fill"></i></span>
   <span class="item tool-item" onclick="board.undo()"><i class="fas fa-undo"></i></span>
   <span class="item tool-item" onclick="board.redo()"><i class="fas fa-redo"></i></span>
-  <span class="item tool-item" onclick="board.clear()"><i class="fas fa-trash"></i></span>
+  <span class="item tool-item" onclick="newProject()"><i class="fas fa-trash"></i></span>
   <span class="item tool-item" onclick="board.addImage()"><i class="fa fa-upload"></i></span>
 </div>
 <div id="palette"></div>
 </body>
-<script src="{% static 'qr_editor/js/main.js' %}" type="text/javascript"></script>
 </html>

@@ -280,7 +280,51 @@ class Frames {
   }
 }
 
-window.onload = function () {
+$(document).ready(function() {
+  $("#close").click(function () { 
+    $('#close').attr("disabled", true);
+
+    let version = $('#version').val();
+    let csrf_token = $("[name='csrfmiddlewaretoken']").val();
+    let postData = { csrfmiddlewaretoken: csrf_token, version: 10 };
+
+    $.post("/editor/get_qr_template", postData, function (data) {
+      window.board = new Canvas(data.width, data.height);
+      window.board.setcolor([0, 0, 0, 255]);
+      window.dim.close();
+      $('#close').attr("disabled", false);
+    }, "json");
+  });
+
+  $(".menubtn").click(function () {
+    document.querySelector(".menu").style.display = document.querySelector(".menu").style.display != "block" ? "block" : "none";
+  });
+
+  window.newProject = function () {
+    document.querySelector(".menu").style.display = "none";
+    localStorage.removeItem('pc-canvas-data');
+    window.dim = new Popup("#popup");
+    window.colors = [
+      [0, 0, 0, 255],
+      [255, 255, 255, 255]
+    ];
+  }
+
+  window.onbeforeunload = function () {
+    board.saveInLocal();
+    return;
+  };	
+
+  var msg;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    msg = e;
+  });
+
+  window.onerror = function (errorMsg, url, lineNumber) {
+    alert('Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber);
+  }
+
   let canvasData = localStorage.getItem('pc-canvas-data');
   if(canvasData){
     data = JSON.parse(canvasData);
@@ -301,45 +345,5 @@ window.onload = function () {
   else {
     newProject();
   }
-}
-
-document.querySelector("#close").onclick = function () {
-  var width = +document.querySelector("#width").value;
-  var height = +document.querySelector("#height").value;
-  window.board = new Canvas(width, height);
-  window.board.setcolor([0, 0, 0, 255]);
-  window.dim.close();
-}
-
-document.querySelector(".menubtn").onclick = function () {
-  document.querySelector(".menu").style.display = document.querySelector(".menu").style.display != "block" ? "block" : "none";
-}
-
-function newProject(){
-  document.querySelector(".menu").style.display = "none";
-  localStorage.removeItem('pc-canvas-data');
-  window.dim = new Popup("#popup");
-  window.colors = [
-    [0, 0, 0, 255],
-    [255, 255, 255, 255]
-  ];
-}
-
-window.onbeforeunload = function () {
-  board.saveInLocal();
-  return;
-};	
-
-var msg;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  msg = e;
 });
 
-function install() {
-  msg.prompt();
-}
-
-window.onerror = function (errorMsg, url, lineNumber) {
-  alert('Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber);
-}
