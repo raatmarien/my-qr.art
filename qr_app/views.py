@@ -1,6 +1,9 @@
 from django.shortcuts import HttpResponse, render
+from django.http import JsonResponse
 import tempfile
 import datetime
+import json
+import base64
 
 import qr_app.qrmap as qrmap
 from .forms import CreateQRForm
@@ -55,6 +58,24 @@ def add_qr_redirect(qr, url):
         created_at=datetime.datetime.now())
     r.save()
 
+
+def create_qr_from_array(request):
+    if request.method == 'POST':
+        design = qrmap.QrMap.from_array(json.loads(request.POST['qrdesign']))
+        qr = qrmap.create_qr_from_map(
+            design, 'HTTPS://MY-QR.ART/R', 'alphanumeric', 'L')
+
+        qrfile = get_temp_name()
+        qr.png(qrfile, scale=5)
+
+        add_qr_redirect(qr, request.POST['qrurl'])
+
+        encoded = base64.b64encode(open(qrfile, "rb").read())
+        return JsonResponse({
+            "encoded": encoded.decode()
+        })
+    else:
+        return HttpResponse('Only accessible as POST')
 
 def create_qr(request):
     if request.method == 'POST':

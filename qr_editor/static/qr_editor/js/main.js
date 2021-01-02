@@ -27,10 +27,12 @@ class Canvas {
     this.ctx.globalAlpha = 1;
     this.ctx.fillRect(0, 0, this.w, this.h);
     this.data = [...Array(this.width)].map(e => Array(this.height).fill([255, 255, 255, 255]));
+    this.reserved = [...Array(this.width)].map(e => Array(this.height).fill(false));
+    this.reservedSet = false;
     this.steps = [];
     this.redo_arr = [];
     this.frames = [];
-    this.canvas.addEventListener("click", e => {
+    this.clickListener =  e => {
       var rect = this.canvas.getBoundingClientRect();
       var x = e.clientX - rect.left;
       var y = e.clientY - rect.top;
@@ -42,10 +44,12 @@ class Canvas {
       if (this.doStep(step)) {
         this.steps.push(step);
         this.redo_arr = [];
+        this.drawReserved();
       }
-    });
+    };
+    this.canvas.addEventListener("click", this.clickListener);
 
-    this.canvas.addEventListener("mousemove", e => {
+    this.mousemoveListener = e => {
       if (this.active) {
         var rect = this.canvas.getBoundingClientRect();
         var x = e.clientX - rect.left;
@@ -58,11 +62,13 @@ class Canvas {
         if (tool == Tool.pen && this.doStep(step)) {
           this.steps.push(step);
           this.redo_arr = [];
+          this.drawReserved();
         }
       }
-    });
+    };
+    this.canvas.addEventListener("mousemove", this.mousemoveListener);
 
-    this.canvas.addEventListener("touchmove", e => {
+    this.touchmoveListener = e => {
       var rect = this.canvas.getBoundingClientRect();
       var x = e.touches[0].clientX - rect.left;
       var y = e.touches[0].clientY - rect.top;
@@ -74,8 +80,10 @@ class Canvas {
       if (tool == tool.Tool.pen && this.doStep(step)) {
         this.steps.push(step);
         this.redo_arr = [];
+        this.drawReserved();
       }
-    })
+    };
+    this.canvas.addEventListener("touchmove", this.touchmoveListener)
 
     this.canvas.addEventListener("mousedown", e => {
       this.active = true;
@@ -85,9 +93,38 @@ class Canvas {
     });
   }
 
+  setQrMap(map) {
+    if (this.reservedSet) return;
+    this.reservedSet = true;
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        let i = y * this.width + x;
+        if (map[i] != 1) {
+          this.reserved[x][y] = true;
+        }
+      }
+    }
+    this.drawReserved();
+  }
+
+  drawReserved() {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (this.reserved[x][y]) {
+          this.draw(x, y, [128, 128, 128, 255]);
+        }
+      }
+    }
+  }
+
   getTool(tools) {
     for (var i = 0; i < tools.length; i++)
       if (tools[i]) return i;
+  }
+
+  redraw() {
+    this.steps.forEach(s => this.doStep(s));
+    this.drawReserved();
   }
 
   doStep(step) {
@@ -124,7 +161,7 @@ class Canvas {
     if (this.colorEquals(targetColor, replacementColor)) {
       return;
     }
-    if (!this.colorEquals(this.data[x][y], targetColor)) {
+    if (!this.colorEquals(this.data[x][y], targetColor) || this.reserved[x][y]) {
       return;
     }
     this.draw(x, y, replacementColor);
@@ -175,9 +212,7 @@ class Canvas {
     if (this.steps.length > 0) {
       this.doClear();
       this.redo_arr.push(this.steps.pop());
-      this.steps.forEach(step => {
-        this.doStep(step);
-      });
+      this.redraw();
     }
   }
 
@@ -185,9 +220,7 @@ class Canvas {
     if (this.redo_arr.length > 0) {
       this.doClear();
       this.steps.push(this.redo_arr.pop());
-      this.steps.forEach(step => {
-        this.doStep(step);
-      });
+      this.redraw();
     }
   }
 
@@ -203,8 +236,15 @@ class Canvas {
       'steps': this.steps,
       'redo_arr': this.redo_arr,
       'dim': window.dim,
+      'reserved': this.reserved,
     }
     localStorage.setItem('pc-canvas-data', JSON.stringify(d));
+  }
+
+  removeListeners() {
+    this.canvas.removeEventListener('click', this.clickEventListener, false);
+    this.canvas.removeEventListener('mousemove', this.mousemoveListener, false);
+    this.canvas.removeEventListener('touchmove', this.touchmoveListener, false);
   }
 
   addImage() {
@@ -284,13 +324,19 @@ $(document).ready(function() {
   $("#close").click(function () { 
     $('#close').attr("disabled", true);
 
+    if (window.board) {
+      board.removeListeners();
+    }
+
     let version = $('#version').val();
-    let csrf_token = $("[name='csrfmiddlewaretoken']").val();
-    let postData = { csrfmiddlewaretoken: csrf_token, version: 10 };
+    let csrf_token = $("#popup").find("[name='csrfmiddlewaretoken']").val();
+    let postData = { csrfmiddlewaretoken: csrf_token, version: version };
 
     $.post("/editor/get_qr_template", postData, function (data) {
       window.board = new Canvas(data.width, data.height);
+      window.board.setQrMap(data.map);
       window.board.setcolor([0, 0, 0, 255]);
+      window.board.redraw();
       window.dim.close();
       $('#close').attr("disabled", false);
     }, "json");
@@ -298,6 +344,20 @@ $(document).ready(function() {
 
   $(".menubtn").click(function () {
     document.querySelector(".menu").style.display = document.querySelector(".menu").style.display != "block" ? "block" : "none";
+  });
+
+  $("#create-qr").click(function() {
+    let csrf_token = $(".create-buttons").find("[name='csrfmiddlewaretoken']").val();
+    let url = $("#to-url").val();
+    let design = window.board.data;
+    let postData = { csrfmiddlewaretoken: csrf_token, qrurl: url, qrdesign: JSON.stringify(design) };
+    console.log(postData);
+    
+    $.post("/create_qr_arr/", postData, function(data) {
+      var img = document.getElementById('qr-result');
+      img.src = 'data:image/png;base64,' + data.encoded;
+      img.style.display = "block";
+    }, "json");
   });
 
   window.newProject = function () {
@@ -321,16 +381,12 @@ $(document).ready(function() {
     msg = e;
   });
 
-  window.onerror = function (errorMsg, url, lineNumber) {
-    alert('Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber);
-  }
-
   let canvasData = localStorage.getItem('pc-canvas-data');
   if(canvasData){
     data = JSON.parse(canvasData);
-    console.log(data);
     window.colors = data.colors;
     window.board = new Canvas(data.width, data.height);
+    window.board.reserved = data.reserved;
     let img = new Image();
     img.setAttribute('src', data.url);
     img.addEventListener("load", function () {
@@ -339,7 +395,7 @@ $(document).ready(function() {
 
     window.board.steps = data.steps;
     window.board.setcolor([0, 0, 0, 255]);
-    window.board.steps.forEach(s => window.board.doStep(s));
+    window.board.redraw();
     window.board.redo_arr = data.redo_arr;
   }
   else {

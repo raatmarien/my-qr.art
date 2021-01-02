@@ -239,3 +239,15 @@ path {
         top:110px;
     }
 }
+
+#qr-result {
+    position: relative;
+    z-index: 9999;
+    height: 100%;
+    display: none;
+}
+
+.create-buttons {
+    display: flex;
+    justify-content: center;
+}

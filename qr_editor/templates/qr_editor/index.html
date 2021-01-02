@@ -14,11 +14,6 @@
   <body>
     <div class="menubtn">☰</div>
     <ul class="menu">
-      <li onclick="newProject()">New</li>
-      <li onclick="board.save()">Save image</li>
-      <li onclick="board.renderGIF()">Save GIF</li>
-      <li onclick="install()">Install PWA</li>
-      <li><a href="https://github.com/rgab1508/PixelCraft" target="_blank"><i class="fab fa-github"></i>Github</a></li>
     </ul>
     <div id="popup">
       {% csrf_token %}
@@ -44,5 +39,13 @@
   <span class="item tool-item" onclick="board.addImage()"><i class="fa fa-upload"></i></span>
 </div>
 <div id="palette"></div>
+
+<img id="qr-result"></img>
+
+<div class="create-buttons">
+  {% csrf_token %}
+  <input type="url" id="to-url" placeholder="QR URL"></input>
+  <button id="create-qr">Create QR code</button>
+</div>
 </body>
 </html>

@@ -93,6 +93,25 @@ class QrMap:
     def read(filename):
         return QrMap.read_file(open(filename, 'rb'))
 
+    def from_array(arr):
+        width = len(arr)
+        height = len(arr[0])
+        qr = QrMap(1, ModuleType.BLOCKED)
+        qr.size = width
+        qr.qr = [ModuleType.BLOCKED] * (qr.size * qr.size)
+        for y in range(0, height):
+            for x in range(0, width):
+                if arr[x][y][0] < 128:
+                    qr.set(x, y, ModuleType.AVAILABLE)
+        return qr
+
+    def to_json_rep(self):
+        return {
+            'width': self.size,
+            'height': self.size,
+            'map': list(map(lambda x: x.to_char(), self.qr)),
+        }
+
 
 def add_square(qr, x, y, size, value=ModuleType.BLOCKED):
     add_rect(qr, x, y, size, size, value)
@@ -232,8 +251,7 @@ def interleave_path(path, version, error):
     return interleaved_path
 
 
-def get_raw_qr_data(filename, error='L', mode='binary'):
-    design = QrMap.read(filename)
+def get_raw_qr_data(design, error='L', mode='binary'):
     version = design.get_version()
     qrmap = get_qr_map(version, error=error, mode=mode)
 
@@ -254,13 +272,16 @@ def get_raw_qr_data(filename, error='L', mode='binary'):
 
     return (data, version)
 
-def create_qr_from_design(filename, url, mode, error):
-    (bits, version) = get_raw_qr_data(filename, error, mode)
+def create_qr_from_map(design, url, mode, error):
+    (bits, version) = get_raw_qr_data(design, error, mode)
     string = (bitstring_to_bin(bits) if mode == 'binary'
               else bitstring_to_alphanumeric(bits))
     with_url = url + '/' + string[(len(url)+1):]
     qr = pyqrcode.create(with_url, error=error, mode=mode, version=version)
     return qr
+
+def create_qr_from_design(filename, url, mode, error):
+    return create_qr_from_map(QrMap.read(filename), url, mode, error)
 
 def bitstring_to_bytes(s):
     b = bytearray()
