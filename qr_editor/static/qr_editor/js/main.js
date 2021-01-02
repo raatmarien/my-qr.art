@@ -1,14 +1,13 @@
 var Tool = {
   "pen": 0,
-  "eraser": 1,
-  "fillBucket": 2,
-  "line": 3,
-  "circle": 4,
-  "ellipse": 5,
-  "addFrame": 6,
-  "undo": 7,
-  "redo": 8,
-  "clearCanvas": 9
+  "fillBucket": 1,
+  // "line": 3,
+  // "circle": 4,
+  // "ellipse": 5,
+  // "addFrame": 6,
+  "undo": 2,
+  "redo": 3,
+  "clearCanvas": 4
 };
 var tools = [true, false, false, false, false, false];
 var lc = [];
@@ -133,7 +132,7 @@ class Canvas {
   setmode(i) {
     tools = [false, false, false, false, false, false];
     tools[i] = true;
-    document.querySelectorAll("#toolbar .item").forEach((x, i) => {
+    document.querySelectorAll("#toolbar .tool-item").forEach((x, i) => {
       if (tools[i]) x.style.backgroundColor = "grey";
       else x.style.backgroundColor = "";
     })
@@ -314,9 +313,6 @@ window.onload = function () {
   else {
     newProject();
   }
-  document.querySelector("#palette").innerHTML = colors.map(x => `<span class="item" style="background-color: rgb(${x[0]},${x[1]},${x[2]})" onclick="board.setcolor([${x}]);act(this);" oncontextmenu="board.setcolor([${x}]);act(this);board.ctx.globalAlpha=+prompt('Transparency(0-1)?')"></span>`).join("\n");
-
-  document.querySelector("#palette").addEventListener("contextmenu",e=>e.preventDefault());
 }
 
 document.querySelector("#close").onclick = function () {
@@ -337,25 +333,7 @@ function newProject(){
   window.dim = new Popup("#popup");
   window.colors = [
     [0, 0, 0, 255],
-    [127, 127, 127, 255],
-    [136, 0, 21, 255],
-    [237, 28, 36, 255],
-    [255, 127, 39, 255],
-    [255, 242, 0, 255],
-    [34, 177, 36, 255],
-    [0, 162, 232, 255],
-    [63, 72, 204, 255],
-    [163, 73, 164, 255],
-    [255, 255, 255, 255],
-    [195, 195, 195, 255],
-    [185, 122, 87, 255],
-    [255, 174, 201, 255],
-    [255, 201, 14, 255],
-    [239, 228, 176, 255],
-    [181, 230, 29, 255],
-    [153, 217, 234, 255],
-    [112, 146, 190, 255],
-    [200, 191, 231, 255]
+    [255, 255, 255, 255]
   ];
 }
 function filler(x, y, cc) {
@@ -370,14 +348,9 @@ function filler(x, y, cc) {
   }
 }
 
-function act(clr) {
-  document.querySelectorAll("#palette .item").forEach(x => x.style.boxShadow = "");
-  clr.style.boxShadow = "10px 10px 10px 10px rgba(0,0,0,0.5)";
-}
-
 window.onbeforeunload = function () {
   board.saveInLocal();
-  return "Data will be lost if you leave the page, are you sure?";
+  return;
 };	
 
 var msg;
