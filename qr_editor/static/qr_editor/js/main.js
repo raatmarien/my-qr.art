@@ -173,7 +173,7 @@ class Canvas {
       let result = this.draw(x, y, color);
       return result;
     } else if (tool == Tool.fillBucket) {
-      this.floodFill(x, y, this.data[x][y], color);
+      this.fastFloodFill(x, y, this.data[x][y], color);
     } else if (tool == "down") {
       this.active = true;
     } else if (tool == "up") {
@@ -196,23 +196,94 @@ class Canvas {
     return JSON.stringify(c1) == JSON.stringify(c2);
   }
 
-  floodFill(x, y, targetColor, replacementColor) {
-    if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+  // This function adapted from. Changed several things to work with my data structures
+  // https://github.com/williammalone/HTML5-Paint-Bucket-Tool/blob/master/html5-canvas-paint-bucket.js
+  // Under the following license:
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //   http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
+  //
+  // Copyright 2010 William Malone (www.williammalone.com)
+  //
+  fastFloodFill = function (startX, startY, startC, replC) {
+    var newPos,
+	x,
+	y,
+	pixelPos,
+	reachLeft,
+	reachRight,
+	drawingBoundLeft = 0,
+	drawingBoundTop = 0,
+	drawingBoundRight = this.width,
+	drawingBoundBottom = this.height,
+	pixelStack = [[startX, startY]];
+
+    if (startX < 0 || startX >= this.width || startY < 0 || startY >= this.height) {
       return;
     }
-    if (this.colorEquals(targetColor, replacementColor)) {
+    if (this.colorEquals(startC, replC)) {
       return;
     }
-    if (!this.colorEquals(this.data[x][y], targetColor) || this.reserved[x][y]) {
+    if (!this.colorEquals(this.data[startX][startY], startC) || this.reserved[startX][startY]) {
       return;
     }
-    this.draw(x, y, replacementColor);
-    this.floodFill(x + 1, y, targetColor, replacementColor);
-    this.floodFill(x, y + 1, targetColor, replacementColor);
-    this.floodFill(x - 1, y, targetColor, replacementColor);
-    this.floodFill(x, y - 1, targetColor, replacementColor);
+
+    while (pixelStack.length) {
+
+      newPos = pixelStack.pop();
+      x = newPos[0];
+      y = newPos[1];
+
+      // Go up as long as the color matches and are inside the canvas
+      while (y >= drawingBoundTop && this.colorEquals(this.data[x][y], startC) && !this.reserved[x][y]) {
+	y -= 1;
+      }
+      y += 1;
+
+      reachLeft = false;
+      reachRight = false;
+
+      // Go down as long as the color matches and in inside the canvas
+      while (y <= drawingBoundBottom && this.colorEquals(this.data[x][y], startC) && !this.reserved[x][y]) {
+
+        this.draw(x, y, replC);
+
+	if (x > drawingBoundLeft) {
+	  if (this.colorEquals(this.data[x-1][y], startC) && !this.reserved[x-1][y]) {
+	    if (!reachLeft) {
+	      // Add pixel to stack
+	      pixelStack.push([x - 1, y]);
+	      reachLeft = true;
+	    }
+	  } else if (reachLeft) {
+	    reachLeft = false;
+	  }
+	}
+
+	if (x < (drawingBoundRight-1)) {
+	  if (this.colorEquals(this.data[x+1][y], startC) && !this.reserved[x+1][y]) {
+	    if (!reachRight) {
+	      // Add pixel to stack
+	      pixelStack.push([x + 1, y]);
+	      reachRight = true;
+	    }
+	  } else if (reachRight) {
+	    reachRight = false;
+	  }
+	}
+	y += 1;
+      }
+    }
   }
-  
+
   setcolor(color) {
     this.ctx.globalAlpha = 1;
     this.color = color;
@@ -255,7 +326,6 @@ class Canvas {
       this.doClear();
       while (true) {
         let popStep = this.steps.pop();
-        console.log(popStep);
         this.redo_arr.push(popStep);
         if (popStep[2] == "down") break;
       }
@@ -407,7 +477,6 @@ $(document).ready(function() {
     let url = $("#to-url").val();
     let design = window.board.data;
     let postData = { csrfmiddlewaretoken: csrf_token, qrurl: url, qrdesign: JSON.stringify(design) };
-    console.log(postData);
     
     $.post("/create_qr_arr/", postData, function(data) {
       var img = document.getElementById('qr-result');
