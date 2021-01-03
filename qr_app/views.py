@@ -38,6 +38,9 @@ def qr_template(request):
         return HttpResponse(f'Error creating QR template')
 
 
+def copyright(request):
+    return render(request, 'qr_app/copyright.html', {});
+
 def get_temp_name():
     return '/tmp/' + next(tempfile._get_candidate_names()) + '.png'
 
