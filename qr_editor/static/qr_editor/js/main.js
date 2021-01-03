@@ -428,9 +428,14 @@ class Canvas {
               var pix = pxctx.getImageData(10*i, 10*j, 10, 10).data;
               pix.forEach((x,k) => {avg[k%4]+=x; if (k%4==0) ctr++;});
               avg = avg.map(x=>~~(x/ctr));
-              _this.draw(i,j, avg);
+              var color = [0, 0, 0, 255];
+              if ((avg[0]+avg[1]+avg[2]) > (128*3)) {
+                color = [255, 255, 255, 255];
+              }
+              _this.draw(i,j, color);
             }
     	  }
+          _this.redraw();
         }
       }
     }
