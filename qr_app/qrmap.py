@@ -1,6 +1,6 @@
 import qr_app.tables as t
 import png
-import pyqrcode
+import qr_app.pyqrcode as pyqrcode
 from enum import Enum
 
 
