@@ -401,6 +401,18 @@ class Canvas {
     window.removeEventListener("touchend", this.upListener);
   }
 
+  getCanvasWidth() {
+    let i = 0;
+    for (let x = 0; x < this.width; x++) {
+      if (!this.reserved[x][0]) {
+        i = x;
+        break;
+      }
+    }
+    
+    return this.w - (i * 10);
+  }
+
   addImage() {
     var _this = this;
     var fp = document.createElement("input");
@@ -412,14 +424,18 @@ class Canvas {
       reader.onload = function() {
         var uimg = new Image();
         uimg.src = reader.result;
-        uimg.width = _this.w;
-        uimg.height = _this.h;
         uimg.onload = function() {
           var pxc = document.createElement("canvas");
           pxc.width = _this.w;
           pxc.height = _this.h;
           var pxctx = pxc.getContext("2d");
-          pxctx.drawImage(uimg,0,0,_this.w,_this.h);
+          var canvasWidth = _this.getCanvasWidth();
+          var factor = Math.min(canvasWidth / uimg.width, _this.h / uimg.height);
+          let drawWidth = factor * uimg.width;
+          let drawHeight = factor * uimg.height;
+          let x = _this.w - drawWidth;
+          let y = (_this.h - drawHeight) / 2;
+          pxctx.drawImage(uimg, x, y, drawWidth, drawHeight);
           var i,j;
           for (i=0; i<_this.width; i++) {
             for (j=0; j<_this.height; j++) {
