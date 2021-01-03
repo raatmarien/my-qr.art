@@ -18,7 +18,48 @@
     <div id="popup">
       {% csrf_token %}
       <h3>Select the size of the QR code</h3>
-      <input type="number" id="version" value="10" min="1" max="40"> Version
+      <select name="version" id="version">
+        <option value="2">Size 25x25 (Bigger sizes recommended)</option>
+        <option value="3">Size 29x29 (Bigger sizes recommended)</option>
+        <option value="4">Size 33x33</option>
+        <option value="5">Size 37x37</option>
+        <option value="6">Size 41x41</option>
+        <option value="7">Size 45x45</option>
+        <option value="8">Size 49x49</option>
+        <option value="9">Size 53x53</option>
+        <option value="10">Size 57x57</option>
+        <option value="11">Size 61x61</option>
+        <option value="12">Size 65x65</option>
+        <option value="13">Size 69x69</option>
+        <option value="14">Size 73x73</option>
+        <option value="15">Size 77x77</option>
+        <option value="16">Size 81x81</option>
+        <option value="17">Size 85x85</option>
+        <option value="18">Size 89x89</option>
+        <option value="19">Size 93x93</option>
+        <option value="20" selected="selected">Size 97x97</option>
+        <option value="21">Size 101x101</option>
+        <option value="22">Size 105x105</option>
+        <option value="23">Size 109x109</option>
+        <option value="24">Size 113x113</option>
+        <option value="25">Size 117x117</option>
+        <option value="26">Size 121x121</option>
+        <option value="27">Size 125x125</option>
+        <option value="28">Size 129x129</option>
+        <option value="29">Size 133x133</option>
+        <option value="30">Size 137x137</option>
+        <option value="31">Size 141x141</option>
+        <option value="32">Size 145x145</option>
+        <option value="33">Size 149x149</option>
+        <option value="34">Size 153x153</option>
+        <option value="35">Size 157x157 (Smaller sizes recommended)</option>
+        <option value="36">Size 161x161 (Smaller sizes recommended)</option>
+        <option value="37">Size 165x165 (Smaller sizes recommended)</option>
+        <option value="38">Size 169x169 (Smaller sizes recommended)</option>
+        <option value="39">Size 173x173 (Smaller sizes recommended)</option>
+        <option value="40">Size 177x177 (Smaller sizes recommended)</option>
+      </select>
+
       <button id="close">OK</button>
     </div>
     <div id="frames" onblur="Frames.close()" tabindex="0">
