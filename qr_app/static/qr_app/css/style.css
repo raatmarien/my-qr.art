@@ -55,16 +55,18 @@ main {
     padding-left: 1em;
     padding-right: 1em;
     transition: all .15s;
+    transform: translateY(0px);
     border-radius: .1em;
     text-decoration: none;
 }
 
 .design-button:hover {
     box-shadow: 0 12px 0 0 var(--subheader-color);
+    transform: translateY(4px);
 }
 
 .design-button:active {
-    box-shadow: 0 1px 0 0 --var(--subheader-color);
+    box-shadow: 0 1px 0 0 var(--subheader-color);
     transform: translateY(15px);
 }
     
