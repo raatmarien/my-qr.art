@@ -21,13 +21,21 @@
    xml:space="preserve"
    sodipodi:docname="logo-text.svg"
    inkscape:version="0.92.1 r15371"
-   inkscape:export-filename="/home/mhr/Pictures/myqrart-logo/logo-text.png"
-   inkscape:export-xdpi="241.905"
-   inkscape:export-ydpi="241.905"><metadata
+   inkscape:export-filename="/home/mhr/dev/python/my-qr.art/qr_app/static/qr_app/img/logo-text.png"
+   inkscape:export-xdpi="101.05264"
+   inkscape:export-ydpi="101.05264"><metadata
      id="metadata5929"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
-     id="defs5927"><rect
+     id="defs5927"><linearGradient
+       inkscape:collect="always"
+       id="linearGradient10666"><stop
+         style="stop-color:#001782;stop-opacity:1"
+         offset="0"
+         id="stop10662" /><stop
+         style="stop-color:#000533;stop-opacity:1"
+         offset="1"
+         id="stop10664" /></linearGradient><rect
        height="8"
        width="8"
        id="p"
@@ -37,7 +45,17 @@
        width="8"
        id="p-9"
        x="0"
-       y="0" /></defs><sodipodi:namedview
+       y="0" /><radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient10666"
+       id="radialGradient10668"
+       cx="392.11591"
+       cy="-1011.8047"
+       fx="392.11591"
+       fy="-1011.8047"
+       r="636.01575"
+       gradientTransform="matrix(1,0,0,0.75221242,0,-250.71263)"
+       gradientUnits="userSpaceOnUse" /></defs><sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1"
@@ -51,8 +69,8 @@
      id="namedview5925"
      showgrid="false"
      inkscape:zoom="0.53300566"
-     inkscape:cx="1317.808"
-     inkscape:cy="530.47679"
+     inkscape:cx="904.41252"
+     inkscape:cy="-144.77394"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
@@ -116,7 +134,7 @@
        id="g5730"><polygon
          transform="matrix(2.10945,0,0,2.1138306,68.563411,-625.63671)"
          stroke-miterlimit="10"
-         points="91.197,323.743 91.197,347.071 75.713,347.071 75.713,323.743 "
+         points="75.713,347.071 75.713,323.743 91.197,323.743 91.197,347.071 "
          id="polygon5718-3"
          style="fill:#c6b684;fill-opacity:1;stroke:#000000;stroke-width:0.86019999;stroke-miterlimit:10" /><polyline
          transform="matrix(2.10945,0,0,2.1138306,68.563411,-625.63671)"
@@ -134,7 +152,7 @@
          id="polyline5724-5"
          style="fill:#d7c58f;fill-opacity:1;stroke:#000000;stroke-width:1.72039998;stroke-miterlimit:10" /><polygon
          transform="matrix(2.10945,0,0,2.1138306,68.563411,-620.02813)"
-         points="144.577,470.905 22.545,470.905 30.892,347.931 136.84,347.931 "
+         points="30.892,347.931 136.84,347.931 144.577,470.905 22.545,470.905 "
          id="polygon5726-3"
          style="fill:#ffffff" /><path
          d="m 370.08782,111.65047 18.21152,256.3083 H 101.37633 l 19.64622,-256.3083 h 249.06527 m 3.85763,-3.6379 H 117.18402 L 96.979197,371.59456 H 392.67261 Z"
@@ -144,7 +162,7 @@
          transform="matrix(2.10945,0,0,2.1138306,68.563411,-625.63671)"
          id="g5736-6"
          style="fill:#c9b168;fill-opacity:1;stroke:#000000;stroke-width:0.47356576;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"><polygon
-           points="98.609,342.77 104.974,351.372 61.964,351.372 68.502,342.77 "
+           points="61.964,351.372 68.502,342.77 98.609,342.77 104.974,351.372 "
            id="polygon5732-2"
            style="fill:#c9b168;fill-opacity:1;stroke:#000000;stroke-width:0.47356576;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" /><path
            d="m 98.175,343.63 5.092,6.881 H 63.698 l 5.23,-6.881 h 29.247 m 0.867,-1.72 H 68.075 l -7.845,10.322 h 46.451 z"
@@ -154,7 +172,7 @@
          transform="matrix(2.10945,0,0,2.1138306,68.563411,-625.63671)"
          id="g5742-1"
          style="fill:#eae1c5;fill-opacity:1;stroke:#000000;stroke-opacity:1"><polygon
-           points="38.433,471.55 52.659,466.809 114.526,466.82 128.687,471.55 "
+           points="114.526,466.82 128.687,471.55 38.433,471.55 52.659,466.809 "
            id="polygon5738-2"
            style="fill:#eae1c5;fill-opacity:1;stroke:#000000;stroke-opacity:1" /><path
            d="m 114.456,467.035 12.902,4.301 h -87.6 l 12.902,-4.301 h 61.796 m 0.07,-0.43 H 52.591 l -15.483,5.16 h 92.901 z"
@@ -163,7 +181,7 @@
            style="fill:#eae1c5;fill-opacity:1;stroke:#000000;stroke-opacity:1" /></g><polygon
          transform="matrix(2.10945,0,0,2.1138306,68.563411,-625.63671)"
          stroke-miterlimit="10"
-         points="130.009,471.765 130.009,479.404 37.108,479.404 37.108,471.765 "
+         points="37.108,479.404 37.108,471.765 130.009,471.765 130.009,479.404 "
          id="polygon5744-0"
          style="fill:#d7c58f;fill-opacity:1;stroke:#000000;stroke-width:0.86019999;stroke-miterlimit:10" /><g
          id="g8026"
@@ -1714,7 +1732,7 @@
              transform="matrix(0.39461325,-0.22783007,0.22783007,0.39461325,531.48207,0.58743811)"
              style="fill:#643619;fill-opacity:1"><polygon
                id="polygon9781"
-               points="87.028,85.613 86.782,121.416 83.341,121.416 83.587,85.613 "
+               points="83.341,121.416 83.587,85.613 87.028,85.613 86.782,121.416 "
                style="fill:#643619;fill-opacity:1" /><path
                id="path9783"
                d="m 86.162,86.473 -0.234,34.083 h -1.72 l 0.234,-34.083 h 1.72 m 1.732,-1.72 h -5.161 l -0.258,37.523 h 5.161 z"
@@ -1755,7 +1773,7 @@
              inkscape:connector-curvature="0"
              style="fill:#643619;fill-opacity:1" /></g></g><text
          xml:space="preserve"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#353535;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#212529;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
          x="453.0376"
          y="359.92178"
          id="text10026"><tspan
@@ -1763,8 +1781,14 @@
            id="tspan10024"
            x="453.0376"
            y="359.92178"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:341.33334351px;font-family:Norwester;-inkscape-font-specification:Norwester;fill:#353535;fill-opacity:1">my-qr.art</tspan></text>
-</g><linearGradient
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:341.33334351px;font-family:Norwester;-inkscape-font-specification:Norwester;fill:#212529;fill-opacity:1;">my-qr.art</tspan></text>
+<rect
+         style="opacity:1;fill:#e00000;fill-opacity:0;fill-rule:nonzero;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+         id="rect12933"
+         width="1660.9536"
+         height="1692.793"
+         x="-281.24774"
+         y="-1987.9705" /></g><linearGradient
        id="SVGID_2_"
        gradientUnits="userSpaceOnUse"
        x1="124.8481"

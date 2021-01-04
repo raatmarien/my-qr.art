@@ -3,8 +3,16 @@
   src: url("/static/fonts/Anton-Regular.ttf") format("truetype");
 }
 
+:root {
+    --bg-color: #edf6f9;
+    --subheader-color: #006d77;
+    --link-color: #e29578;
+    --text-color: rgba(0, 0, 0, 0.8);
+    --button-color: #83c5be;
+}
+
 html {
-    background-color: #000533ff;
+    background-color: var(--bg-color);
 }
 
 body, html {
@@ -41,8 +49,8 @@ main {
     font-family: Anton;
     color: #fff;
     font-size: 350%;
-    box-shadow: 0 16px 0 0 #600b00ff;
-    background-color: #c01700ff;
+    box-shadow: 0 16px 0 0 var(--subheader-color);
+    background-color: var(--button-color);
     margin-top: 1em;
     padding-left: 1em;
     padding-right: 1em;
@@ -52,24 +60,23 @@ main {
 }
 
 .design-button:hover {
-    box-shadow: 0 12px 0 0 #600b00ff;
+    box-shadow: 0 12px 0 0 var(--subheader-color);
 }
 
 .design-button:active {
-    box-shadow: 0 1px 0 0 #600b00ff;
+    box-shadow: 0 1px 0 0 --var(--subheader-color);
     transform: translateY(15px);
 }
     
 .explanation {
     max-width: 45em;
     padding: 1em;
-    color: #ddd;
     margin: 1em auto auto;
 }
 
 h1 {
     font-family: Anton;
-    color: #cafffdff;
+    color: var(--subheader-color);
     font-size: 2.5rem;
     margin-bottom: .5rem;
     font-weight: 500;
@@ -79,7 +86,7 @@ h1 {
 p {
     text-align: left;
     margin-top: 0;
-    color: white;
+    color: var(--text-color);
     margin-bottom: 1rem;
     display: block;
     margin-block-start: 1em;
@@ -89,17 +96,17 @@ p {
 }
 
 .explanation p a {
-    color: #cafffdff;
+    color: var(--link-color);
 }
 
 footer {
-    background-color: rgba(0,0,0,.5);
-    color: #bbb;
+    background-color: var(--subheader-color);
+    color: rgba(255, 255, 255, 0.8);
     padding: .8em;
     text-align: center;
     width: 100%;
 }
 
 footer a {
-    color: white;
+    color: var(--link-color);
 }
