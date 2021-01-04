@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>My-Qr.art - Pro mode</title>
+  </head>
+  <body>
+    <h1>Design you own QR codes!</h1>
+
+    <p>QR codes usually look boring, but with this tool you can make your
+      QR look however you want! Simply choose the version (size) of the QR
+      code you want to make and download the template. This template is an
+      image file with in white where you can freely choose how the code
+      will look and in grey the reserved area. In black and white draw the
+      QR design you want on here. Then save it without any
+      transparency.</p>
+
+    <form action="/qr_template/" method="GET" >
+      <label for="version">Version (between 1 and 40):</label>
+      <input type="number" id="version" name="version" min="1" max="40 ">
+
+      <input type="submit" value="Get QR template" >
+    </form>
+
+    <p>Next you can upload your design and choose the url you want to send
+      the people who scan it to further down on this page. Then you can
+      share the awesome QR code this website made for you!</p>
+    
+    <form action="/create_qr/" enctype="multipart/form-data" method="POST" >{% csrf_token %}
+      <label for="qrdesign">Your QR design here:</label>
+      <input type="file" id="qrdesign" name="qrdesign">
+
+      <br><br>
+      
+      <label for="qrurl">The URL the QR should go to:</label>
+      <input type="url" id="qrurl" name="qrurl">
+
+      <br><br>
+      <input type="submit" value="Create QR code" >
+    </form>
+  </body>
+</html>

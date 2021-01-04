@@ -1,0 +1,105 @@
+@font-face {
+  font-family: Anton;
+  src: url("/static/fonts/Anton-Regular.ttf") format("truetype");
+}
+
+html {
+    background-color: #000533ff;
+}
+
+body, html {
+    height: 100%;
+    width: 100vw;
+}
+
+body {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Roboto",
+    "Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans",
+    "Helvetica Neue",sans-serif;
+}
+
+main {
+    min-height: 100%;
+}
+
+.welcome-page {
+    text-align: center;
+    width: 100%;
+    min-height: 100vh;
+    height: 100%;
+}
+
+.logo {
+    max-width: 34em;
+    width: 100%;
+    margin: 3em auto auto;
+}
+
+.design-button {
+    padding: .3em;
+    border: none;
+    font-family: Anton;
+    color: #fff;
+    font-size: 350%;
+    box-shadow: 0 16px 0 0 #600b00ff;
+    background-color: #c01700ff;
+    margin-top: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    transition: all .15s;
+    border-radius: .1em;
+    text-decoration: none;
+}
+
+.design-button:hover {
+    box-shadow: 0 12px 0 0 #600b00ff;
+}
+
+.design-button:active {
+    box-shadow: 0 1px 0 0 #600b00ff;
+    transform: translateY(15px);
+}
+    
+.explanation {
+    max-width: 45em;
+    padding: 1em;
+    color: #ddd;
+    margin: 1em auto auto;
+}
+
+h1 {
+    font-family: Anton;
+    color: #cafffdff;
+    font-size: 2.5rem;
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+p {
+    text-align: left;
+    margin-top: 0;
+    color: white;
+    margin-bottom: 1rem;
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
+
+.explanation p a {
+    color: #cafffdff;
+}
+
+footer {
+    background-color: rgba(0,0,0,.5);
+    color: #bbb;
+    padding: .8em;
+    text-align: center;
+    width: 100%;
+}
+
+footer p a {
+    color: white;
+}

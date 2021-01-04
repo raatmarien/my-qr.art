@@ -27,10 +27,13 @@ from .forms import CreateQRForm
 from redirect.models import RedirectItem
 
 
-# Create your views here.
 def index(request):
+    return render(request, 'qr_app/index.html', {})
+
+
+def pro_mode(request):
     context = {}
-    return render(request, 'qr_app/index.html', context)
+    return render(request, 'qr_app/pro-mode.html', context)
 
 
 def qr_template(request):
