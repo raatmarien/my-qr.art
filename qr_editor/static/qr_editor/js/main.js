@@ -543,6 +543,7 @@ $(document).ready(function() {
   });
 
   $("#create-qr").click(function() {
+    $("#create-qr").prop("disabled", true);
     let csrf_token = $(".create-buttons").find("[name='csrfmiddlewaretoken']").val();
     let url = $("#to-url").val();
     let design = window.board.data;
@@ -551,8 +552,10 @@ $(document).ready(function() {
     $.post("/create_qr_arr/", postData, function(data) {
       if (data.success) {
         window.location.href = data.qr_page;
+        setTimeout(() => $("#create-qr").prop("disabled", false), 1000);
       } else {
         alert(data.error);
+        setTimeout(() => $("#create-qr").prop("disabled", false), 1000);
       }
     }, "json");
   });
