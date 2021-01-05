@@ -35,7 +35,7 @@ class RedirectItem(models.Model):
     visits = models.IntegerField(default=0)
 
     def __str__(self):
-        return f'"{self.from_identifier}" --> "{self.to_url}"'
+        return f'"{self.from_identifier[:100]}" --> "{self.to_url}"'
 
     # Is it smart to change the from_identifier like this?
     def save(self, *args, **kwargs):

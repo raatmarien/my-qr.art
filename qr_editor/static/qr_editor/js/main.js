@@ -528,9 +528,13 @@ $(document).ready(function() {
     let postData = { csrfmiddlewaretoken: csrf_token, qrurl: url, qrdesign: JSON.stringify(design) };
     
     $.post("/create_qr_arr/", postData, function(data) {
-      var img = document.getElementById('qr-result');
-      img.src = 'data:image/png;base64,' + data.encoded;
-      img.style.display = "block";
+      if (data.success) {
+        var img = document.getElementById('qr-result');
+        img.src = 'data:image/png;base64,' + data.encoded;
+        img.style.display = "block";
+      } else {
+        alert(data.error);
+      }
     }, "json");
   });
 

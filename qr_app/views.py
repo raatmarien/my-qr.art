@@ -16,6 +16,8 @@
 
 from django.shortcuts import HttpResponse, render
 from django.http import JsonResponse
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 import tempfile
 import datetime
 import json
@@ -24,7 +26,7 @@ import base64
 import qr_app.qrmap as qrmap
 from .forms import CreateQRForm
 
-from redirect.models import RedirectItem
+from redirect.models import RedirectItem, to_from_identifier
 
 
 def index(request):
@@ -75,14 +77,33 @@ def save_file(f):
 def add_qr_redirect(qr, url):
     index = qr.data.index(b'/R/')
     ident = qr.data[index+3:-3]
+    from_identifier = ident.decode('UTF-8')
+    from_identifier_search = to_from_identifier(from_identifier)
+    pre_existing = RedirectItem.objects.filter(from_identifier=from_identifier_search)
+    if pre_existing.count() > 0:
+        return False
+
     r = RedirectItem.objects.create(
-        from_identifier=ident.decode('UTF-8'), to_url=url,
+        from_identifier=from_identifier, to_url=url,
         created_at=datetime.datetime.now())
     r.save()
+
+    return True
 
 
 def create_qr_from_array(request):
     if request.method == 'POST':
+        url = request.POST['qrurl']
+
+        try:
+            URLValidator()(url)
+        except ValidationError:
+            return JsonResponse({
+                "success": False,
+                "error": "Specify a correct URL. Make sure that your\
+                URL starts with 'https://' or 'http://'.",
+                })
+
         design = qrmap.QrMap.from_array(json.loads(request.POST['qrdesign']))
         qr = qrmap.create_qr_from_map(
             design, 'HTTPS://MY-QR.ART/R', 'alphanumeric', 'L')
@@ -90,11 +111,17 @@ def create_qr_from_array(request):
         qrfile = get_temp_name()
         qr.png(qrfile, scale=5)
 
-        add_qr_redirect(qr, request.POST['qrurl'])
+        if not add_qr_redirect(qr, url):
+            return JsonResponse({
+                "success": False,
+                "error": "This QR code already exists. Change a few\
+                pixels or try a different size",
+                })
 
         encoded = base64.b64encode(open(qrfile, "rb").read())
         return JsonResponse({
-            "encoded": encoded.decode()
+            "success": True,
+            "encoded": encoded.decode(),
         })
     else:
         return HttpResponse('Only accessible as POST')
