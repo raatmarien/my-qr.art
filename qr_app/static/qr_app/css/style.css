@@ -89,7 +89,7 @@ h1 {
 }
 
 p {
-    text-align: left;
+    text-align: justify;
     margin-top: 0;
     color: var(--text-color);
     margin-bottom: 1rem;
