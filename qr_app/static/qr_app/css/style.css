@@ -18,6 +18,11 @@ html {
 body, html {
     height: 100%;
     width: 100vw;
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
 }
 
 body {
@@ -107,9 +112,14 @@ p {
 footer {
     background-color: var(--subheader-color);
     color: rgba(255, 255, 255, 0.8);
-    padding: .8em;
     text-align: center;
     width: 100%;
+}
+
+.footer-content {
+    padding: .8em;
+    max-width: 45em;
+    margin: auto;
 }
 
 footer a {
