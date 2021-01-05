@@ -36,32 +36,6 @@ def index(request):
     return render(request, 'qr_app/index.html', {})
 
 
-def pro_mode(request):
-    context = {}
-    return render(request, 'qr_app/pro-mode.html', context)
-
-
-def qr_template(request):
-    if 'version' not in request.GET:
-        return HttpResponse('Include a version')
-    try:
-        version = int(request.GET['version'])
-    except ValueError:
-        return HttpResponse('version should be an integer')
-    if version < 1 or version > 40:
-        return HttpResponse('version should be between 1 and 40')
-
-    qr_map = qrmap.get_qr_map(version, 'alphanumeric', 'L', 'https://my-qr.art/r/')
-    filename = '/tmp/' + next(tempfile._get_candidate_names()) + '.png'
-    qr_map.save(filename)
-
-    try:
-        with open(filename, "rb") as f:
-            return HttpResponse(f.read(), content_type="image/png")
-    except IOError:
-        return HttpResponse(f'Error creating QR template')
-
-
 def copyright(request):
     return render(request, 'qr_app/copyright.html', {});
 
@@ -166,25 +140,3 @@ def get_qr_from_secret(request, qr_secret):
             return HttpResponse(f.read(), content_type="image/png")
     else:
         return HttpResponseNotFound('<h1>QR code not found</h1>')
-
-
-def create_qr(request):
-    if request.method == 'POST':
-        form = CreateQRForm(request.POST, request.FILES)
-        if True:#form.is_valid():
-            qrdesign = request.FILES.get('qrdesign', None)
-            filename = save_file(qrdesign)
-            qr = qrmap.create_qr_from_design(
-                filename, 'HTTPS://MY-QR.ART/R', 'alphanumeric', 'L')
-
-            qrfile = get_temp_name()
-            qr.png(qrfile, scale=5)
-
-            add_qr_redirect(qr, request.POST['qrurl'])
-
-            with open(qrfile, "rb") as f:
-                return HttpResponse(f.read(), content_type="image/png")
-        else:
-            return HttpResponse('Form invalid')
-    else:
-        return HttpResponse('Only accessible as POST')
