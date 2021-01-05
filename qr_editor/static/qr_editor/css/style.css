@@ -1,3 +1,11 @@
+:root {
+    --bg-color: #edf6f9;
+    --subheader-color: #006d77;
+    --link-color: #e29578;
+    --text-color: rgba(0, 0, 0, 0.8);
+    --button-color: #83c5be;
+}
+
 @font-face {
     font-family: 'Martel Sans';
     font-style: normal;
@@ -12,12 +20,12 @@
 }
 
 body {
-    background-color: #232125;
+    background-color: var(--bg-color);
     margin: 0px;
 }
 
 #popup, #frames {
-    background-color: #332f35;
+    background-color: var(--button-color);
     color: white;
     font-size: 20px;
     padding: 30px;
@@ -55,7 +63,7 @@ body {
 #frames .btn {
     position: absolute;
     background-color: rgba(255,255,255,0.5);
-    color: black;
+    color: var(--subheader-color);
     font-size: 20px;
     padding: 10px;
     top: 50%;
@@ -70,34 +78,24 @@ body {
     margin: 10px; 
 }
 
-#width,
-#height {
-    background-color: #262327;
+.normal-button {
+    background-color: var(--subheader-color);
     color: white;
-    margin: 10px;
-    padding: 5px;
-    font-size: 14px;
-    font-weight: bolder;
-    border: none;
-    border-radius: 3px;
-    max-width: 60px;
-}
-
-#close {
-    background-color: #262327;
-    color: white;
-    margin: 15px auto 5px auto;
-    padding: 5px 10px 5px 10px;
     font-size: 18px;
     font-weight: bolder;
     display: block;
     border: none;
     border-radius: 3px;
-    max-width: 60px;
     transition: 0.2s all;
 }
 
-#close:hover {
+#close {
+    max-width: 60px;
+    margin: 15px auto 5px auto;
+    padding: 5px 10px 5px 10px;
+}
+
+.normal-button:hover {
     box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.5);
 }
 
@@ -128,7 +126,12 @@ body {
     max-width: 150px;
 }
 
+.fa-github {
+    padding-right: 5px;
+}
+
 #toolbar .item {
+    background-color: var(--subheader-color);
     display: inline-block;
     float: left;
     padding: 15px;
@@ -138,6 +141,16 @@ body {
     width: 32px;
     font-family: Arial, FontAwesome;
     font-size: 24px;
+}
+
+#toolbar .color {
+    width: 26px;
+    height: 26px;
+    border: 4px solid var(--button-color);
+}
+
+#toolbar .color-white {
+    border-color: black;
 }
 
 #palette {
@@ -170,7 +183,7 @@ path {
     left: 20px;
     top: 20px;
     box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
-    background-color: #332f35;
+    background-color: var(--subheader-color);
     color: white;
     padding: 5px 15px 5px 15px;
     border-radius: 5px;
@@ -194,7 +207,7 @@ path {
 .menu li {
     padding: 5px 20px 5px 20px;
     list-style: none;
-    background-color: #332f35;
+    background-color: var(--subheader-color);
     cursor: pointer;
 }
 

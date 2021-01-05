@@ -24,7 +24,8 @@
   <body>
     <div class="menubtn">☰</div>
     <ul class="menu">
-    </ul>
+      <li><a href="https://github.com/raatmarien/my-qr.art" target="_blank">Home</a></li>
+      <li><a href="https://github.com/raatmarien/my-qr.art" target="_blank"><i class="fab fa-github" aria-hidden="true"></i>Github</a></li>    </ul>
     <div id="popup">
       {% csrf_token %}
       <h3>Select the size of the QR code</h3>
@@ -70,7 +71,7 @@
         <option value="40">Size 177x177 (Smaller sizes recommended)</option>
       </select>
 
-      <button id="close">OK</button>
+      <button id="close" class="normal-button">OK</button>
     </div>
     <div id="frames" onblur="Frames.close()" tabindex="0">
       <div class="btn" style="left: 10px;" onclick="document.querySelector('#frames #gallery').scrollLeft-=100;"><i class="fa fa-chevron-left"></i></div>
@@ -80,8 +81,8 @@
 </div>
 <canvas id="canvas"></canvas>
 <div id="toolbar">
-  <span class="item" onclick="board.setcolor([0, 0, 0, 255])" style="background-color: black;"></span>
-  <span class="item" onclick="board.setcolor([255, 255, 255, 255])" style="background-color: white;"></span>
+  <span class="item color color-black" onclick="board.setcolor([0, 0, 0, 255])" style="background-color: black;"></span>
+  <span class="item color color-white" onclick="board.setcolor([255, 255, 255, 255])" style="background-color: white;"></span>
   <span class="item tool-item" onclick="board.setmode(0)" style="background-color: grey;"><i class="fas fa-pencil-alt"></i></span>
   <span class="item tool-item" onclick="board.setmode(1)"><i class="fas fa-fill"></i></span>
   <span class="item tool-item" onclick="board.undo()"><i class="fas fa-undo"></i></span>
@@ -96,7 +97,7 @@
 <div class="create-buttons">
   {% csrf_token %}
   <input type="url" id="to-url" placeholder="QR URL"></input>
-  <button id="create-qr">Create QR code</button>
+  <button id="create-qr" class="normal-button">Create QR code</button>
 </div>
 </body>
 </html>

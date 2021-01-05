@@ -601,5 +601,16 @@ $(document).ready(function() {
   else {
     newProject();
   }
+
+  let black = $('.color-black');
+  let white = $('.color-white');
+  black.click(() => {
+    black.css('border-color', '#83c5be');
+    white.css('border-color', 'black');
+  });
+  white.click(() => {
+    white.css('border-color', '#006d77');
+    black.css('border-color', 'darkgrey');
+  });
 });
 
