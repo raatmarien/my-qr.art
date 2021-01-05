@@ -80,10 +80,8 @@ def save_file(f):
 def add_qr_redirect(qr, url):
     index = qr.data.index(b'/R/')
     ident = qr.data[index+3:-3]
-    from_identifier = ident.decode('UTF-8')
-    from_identifier_search = to_from_identifier(from_identifier)
     pre_existing = RedirectItem.objects.filter(
-        from_identifier=from_identifier_search)
+        qr_data_utf8=qr.data.decode('UTF-8'))
     if pre_existing.count() > 0:
         return False
 
