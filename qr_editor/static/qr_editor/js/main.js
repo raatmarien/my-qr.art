@@ -426,26 +426,24 @@ class Canvas {
         uimg.src = reader.result;
         uimg.onload = function() {
           var pxc = document.createElement("canvas");
-          pxc.width = _this.w;
-          pxc.height = _this.h;
+          pxc.width = _this.width;
+          pxc.height = _this.height;
           var pxctx = pxc.getContext("2d");
-          var canvasWidth = _this.getCanvasWidth();
-          var factor = Math.min(canvasWidth / uimg.width, _this.h / uimg.height);
+          var canvasWidth = _this.getCanvasWidth() / 10;
+          var factor = Math.min(canvasWidth / uimg.width, _this.height / uimg.height);
           let drawWidth = factor * uimg.width;
           let drawHeight = factor * uimg.height;
-          let x = _this.w - drawWidth;
-          let y = (_this.h - drawHeight) / 2;
+          let x = _this.width - drawWidth;
+          let y = (_this.height - drawHeight) / 2;
           pxctx.drawImage(uimg, x, y, drawWidth, drawHeight);
           var i,j;
           for (i=0; i<_this.width; i++) {
             for (j=0; j<_this.height; j++) {
               var ctr = 0;
               var avg = [0,0,0,0];
-              var pix = pxctx.getImageData(10*i, 10*j, 10, 10).data;
-              pix.forEach((x,k) => {avg[k%4]+=x; if (k%4==0) ctr++;});
-              avg = avg.map(x=>~~(x/ctr));
+              var pix = pxctx.getImageData(i, j, 1, 1).data;
               var color = [0, 0, 0, 255];
-              if ((avg[0]+avg[1]+avg[2]) > (128*3)) {
+              if ((pix[0]+pix[1]+pix[2]) > (128*3) && pix[3] > 0) {
                 color = [255, 255, 255, 255];
               }
               _this.draw(i,j, color);
