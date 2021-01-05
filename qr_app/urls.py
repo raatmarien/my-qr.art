@@ -22,6 +22,8 @@ urlpatterns = [
     path('pro-mode', views.pro_mode, name='pro_mode'),
     path('qr_template/', views.qr_template, name='qr_template'),
     path('copyright/', views.copyright, name='copyright'),
+    path('your-qr-image/<str:qr_secret>', views.get_qr_from_secret, name='get_qr_from_secret'),
+    path('your-qr/<str:qr_secret>', views.get_your_qr_page, name='get_your_qr_page'),
     path('create_qr/', views.create_qr, name='create_qr'),
     path('create_qr_arr/', views.create_qr_from_array, name='create_qr_from_array'),
 ]

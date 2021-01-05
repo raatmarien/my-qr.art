@@ -550,9 +550,7 @@ $(document).ready(function() {
     
     $.post("/create_qr_arr/", postData, function(data) {
       if (data.success) {
-        var img = document.getElementById('qr-result');
-        img.src = 'data:image/png;base64,' + data.encoded;
-        img.style.display = "block";
+        window.location.href = data.qr_page;
       } else {
         alert(data.error);
       }

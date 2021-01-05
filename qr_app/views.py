@@ -18,10 +18,13 @@ from django.shortcuts import HttpResponse, render
 from django.http import JsonResponse
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.urls import reverse
+import qr_app.pyqrcode as pyqrcode
 import tempfile
 import datetime
 import json
 import base64
+import secrets
 
 import qr_app.qrmap as qrmap
 from .forms import CreateQRForm
@@ -79,16 +82,21 @@ def add_qr_redirect(qr, url):
     ident = qr.data[index+3:-3]
     from_identifier = ident.decode('UTF-8')
     from_identifier_search = to_from_identifier(from_identifier)
-    pre_existing = RedirectItem.objects.filter(from_identifier=from_identifier_search)
+    pre_existing = RedirectItem.objects.filter(
+        from_identifier=from_identifier_search)
     if pre_existing.count() > 0:
         return False
 
+    qr_secret = secrets.token_hex(10)
+
     r = RedirectItem.objects.create(
+        qr_data_utf8=qr.data.decode('UTF-8'),
         from_identifier=from_identifier, to_url=url,
-        created_at=datetime.datetime.now())
+        created_at=datetime.datetime.now(),
+        secret=qr_secret)
     r.save()
 
-    return True
+    return qr_secret
 
 
 def create_qr_from_array(request):
@@ -108,23 +116,43 @@ def create_qr_from_array(request):
         qr = qrmap.create_qr_from_map(
             design, 'HTTPS://MY-QR.ART/R', 'alphanumeric', 'L')
 
-        qrfile = get_temp_name()
-        qr.png(qrfile, scale=5)
-
-        if not add_qr_redirect(qr, url):
+        qr_secret = add_qr_redirect(qr, url)
+        if qr_secret == False:
             return JsonResponse({
                 "success": False,
                 "error": "This QR code already exists. Change a few\
                 pixels or try a different size",
                 })
 
-        encoded = base64.b64encode(open(qrfile, "rb").read())
+
         return JsonResponse({
             "success": True,
-            "encoded": encoded.decode(),
+            "qr_page": reverse('get_your_qr_page', args=[qr_secret]),
         })
     else:
         return HttpResponse('Only accessible as POST')
+
+
+def get_your_qr_page(request, qr_secret):
+    return render(request, 'qr_app/your-qr-page.html', context={
+        'qrImage': reverse('get_qr_from_secret', args=[qr_secret]),
+        })
+
+
+def get_qr_from_secret(request, qr_secret):
+    ri = RedirectItem.objects.filter(secret=qr_secret)
+    if ri.count() > 0:
+        qr_data_utf8 = ri.first().qr_data_utf8
+        qr = pyqrcode.create(
+            qr_data_utf8, mode='alphanumeric',
+            error='L', encoding='UTF-8')
+        
+        qrfile = get_temp_name()
+        qr.png(qrfile, scale=5)
+
+        with open(qrfile, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/png")
+
 
 def create_qr(request):
     if request.method == 'POST':

@@ -29,6 +29,8 @@ def to_from_identifier(s):
 
 
 class RedirectItem(models.Model):
+    qr_data_utf8 = models.CharField(max_length=7000)
+    secret = models.CharField(max_length=10)
     from_identifier = models.CharField(max_length=7000)
     to_url = models.CharField(max_length=1000)
     created_at = models.DateTimeField()

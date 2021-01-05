@@ -125,3 +125,7 @@ footer {
 footer a {
     color: var(--link-color);
 }
+
+.qr-placeholder {
+    background-color: white;
+}
