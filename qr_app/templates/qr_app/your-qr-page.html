@@ -1,0 +1,75 @@
+{% load static %}
+<html>
+  <head>
+    <title>My-Qr.art - Your custom QR code</title>
+    <meta name="author" content="Marien Raat">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'qr_app/css/style.css' %}">
+  </head>
+  <body>
+    <div class="welcome-page">
+      <div class="welcome-text">
+        <header>
+          <a href="/">
+            <img src="{% static 'qr_app/img/logo-text.png' %}"
+                 alt="MY-QR.ART Logo"
+                 class="logo"/>
+          </a>
+        </header>
+
+        <main>
+          <article class="explanation">
+
+            <h1>Here's your QR code!</h1>
+
+            <div class="qr-placeholder">
+              <img class="qr-image" src="{{ qrImage }}"
+                   alt="Your QR code" width="100%" height="745px" />
+            </div>
+
+            <h1>What do I do?</h1>
+
+            <p>On the top of the page is your custom QR code. Try to scan it, share it with your
+            friends, or save it to your computer, by left clicking on the QR code and choosing 'Save
+            image as' (or equivalent). On phones it might work a bit differently. In worst case
+            scenario, simply take a screenshot of the code.</p>
+
+            <h1>Can I make another one?</h1>
+
+            <p>Of course, just <a href="/editor">click here to get back to the editor</a></p>
+            
+            <h1>Can I get back to the home page?</h1>
+
+            <p>Yes, click on the big 'My-QR.art' logo on the top of this page, or simply
+            click <a href="/">here</a>.</p>
+
+            <h1>Who made this?</h1>
+
+            <p>Well, you made this beatiful QR code, but the coding
+            of <a href="https://my-qr.art">My-QR.art</a> was done by me,
+            Marien. You can check out some more of my work
+            on <a href="https://marienraat.nl">my website</a>. I used and
+            adapted some other software to create
+            <a href="https://my-qr.art">My-QR.art</a>,
+            notably <a href="https://www.djangoproject.com/">Django</a>,
+            <a href="https://github.com/mnooner256/pyqrcode">pyqrcode</a> and
+            <a href="https://github.com/rgab1508/PixelCraft">PixelCraft</a>. Furthermore
+            the design of this page is based on the design
+            of <a href="https://playcardswith.me">PlayCardsWith.Me</a>
+            by <a href="https://invulns.nl">Jochem Raat</a>. License info can be
+            found on the <a href="/copyright">copyright page</a>.
+          </article>
+        </main>
+      </div>
+
+      <footer>
+        <div class="footer-content">
+          <a href="https://my-qr.art">My-QR.art</a> is free and open source
+          software!  Report bugs or contribute
+          at <a href="https://github.com/raatmarien/my-qr.art">the GitHub
+            page</a>.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
