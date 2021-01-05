@@ -206,6 +206,8 @@ class Canvas {
       this.active = true;
     } else if (tool == "up") {
       this.active = false;
+    } else if (tool == "addImage") {
+      this.doImageStep(color);
     }
     return true;
   }
@@ -222,6 +224,18 @@ class Canvas {
 
   colorEquals(c1, c2) {
     return JSON.stringify(c1) == JSON.stringify(c2);
+  }
+
+  doImageStep(imageSteps) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
+        let color = [0, 0, 0, 255];
+        if (imageSteps[x*this.width + y] > 0) {
+          color = [255, 255, 255, 255];
+        }
+        this.draw(x, y, color);
+      }
+    }
   }
 
   // This function adapted from. Changed several things to work with my data structures
@@ -352,10 +366,10 @@ class Canvas {
   undo() {
     if (this.steps.length > 0) {
       this.doClear();
-      while (true) {
+      while (this.steps.length > 0) {
         let popStep = this.steps.pop();
         this.redo_arr.push(popStep);
-        if (popStep[2] == "down") break;
+        if (popStep[2] == "down" || popStep[2] == 'addImage') break;
       }
       this.redraw();
     }
@@ -367,7 +381,7 @@ class Canvas {
       while (this.redo_arr.length > 0) {
         let popStep = this.redo_arr.pop();
         this.steps.push(popStep);
-        if (popStep[2] == "up") break;
+        if (popStep[2] == "up" || popStep[2] == 'addImage') break;
       }
       this.redraw();
     }
@@ -413,46 +427,55 @@ class Canvas {
     return this.w - (i * 10);
   }
 
+  generateImageStep(file) {
+    var _this = this;
+    let imageSteps = [];
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function() {
+      var uimg = new Image();
+      uimg.src = reader.result;
+      uimg.onload = function() {
+        var pxc = document.createElement("canvas");
+        pxc.width = _this.width;
+        pxc.height = _this.height;
+        var pxctx = pxc.getContext("2d");
+        var canvasWidth = _this.getCanvasWidth() / 10;
+        var factor = Math.min(canvasWidth / uimg.width, _this.height / uimg.height);
+        let drawWidth = factor * uimg.width;
+        let drawHeight = factor * uimg.height;
+        let x = _this.width - drawWidth;
+        let y = (_this.height - drawHeight) / 2;
+        pxctx.drawImage(uimg, x, y, drawWidth, drawHeight);
+        var i,j;
+        for (i=0; i<_this.width; i++) {
+          for (j=0; j<_this.height; j++) {
+            var ctr = 0;
+            var avg = [0,0,0,0];
+            var pix = pxctx.getImageData(i, j, 1, 1).data;
+            var color = 0;
+            if ((pix[0]+pix[1]+pix[2]) > (128*3) && pix[3] > 0) {
+              color = 1;
+            }
+            imageSteps.push(color);
+          }
+    	}
+        let step = [0, 0, "addImage", imageSteps];
+        _this.steps.push(step);
+        _this.redraw();
+      }
+    }
+  }
+  
   addImage() {
     var _this = this;
     var fp = document.createElement("input");
     fp.type = "file";
     fp.click();
-    fp.onchange = function(e) {
-      var reader = new FileReader();
-      reader.readAsDataURL(e.target.files[0]);
-      reader.onload = function() {
-        var uimg = new Image();
-        uimg.src = reader.result;
-        uimg.onload = function() {
-          var pxc = document.createElement("canvas");
-          pxc.width = _this.width;
-          pxc.height = _this.height;
-          var pxctx = pxc.getContext("2d");
-          var canvasWidth = _this.getCanvasWidth() / 10;
-          var factor = Math.min(canvasWidth / uimg.width, _this.height / uimg.height);
-          let drawWidth = factor * uimg.width;
-          let drawHeight = factor * uimg.height;
-          let x = _this.width - drawWidth;
-          let y = (_this.height - drawHeight) / 2;
-          pxctx.drawImage(uimg, x, y, drawWidth, drawHeight);
-          var i,j;
-          for (i=0; i<_this.width; i++) {
-            for (j=0; j<_this.height; j++) {
-              var ctr = 0;
-              var avg = [0,0,0,0];
-              var pix = pxctx.getImageData(i, j, 1, 1).data;
-              var color = [0, 0, 0, 255];
-              if ((pix[0]+pix[1]+pix[2]) > (128*3) && pix[3] > 0) {
-                color = [255, 255, 255, 255];
-              }
-              _this.draw(i,j, color);
-            }
-    	  }
-          _this.redraw();
-        }
-      }
-    }
+    fp.onchange = e => {
+      let file = e.target.files[0]
+      this.generateImageStep(file);
+    };
   }
 }
 class Popup {
