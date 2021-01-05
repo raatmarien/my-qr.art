@@ -23,7 +23,7 @@
             <h1>Here's your QR code!</h1>
 
             <div class="qr-placeholder">
-              <img class="qr-image" src="{{ qrImage }}"
+              <img class="qr-image" src="{{ qr_image }}"
                    alt="Your QR code" width="100%" />
             </div>
 
@@ -33,6 +33,11 @@
             friends, or save it to your computer, by left clicking on the QR code and choosing 'Save
             image as' (or equivalent). On phones it might work a bit differently. In worst case
             scenario, simply take a screenshot of the code.</p>
+
+            <h1>Where does my QR code go?</h1>
+
+            <p>Your QR code leads to <a href="{{ qr_url }}">{{ qr_url }}</a>. If you
+            scan the QR code you should be redirected to there.</p>
 
             <h1>Can I make another one?</h1>
 

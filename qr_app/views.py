@@ -134,15 +134,28 @@ def create_qr_from_array(request):
 
 
 def get_your_qr_page(request, qr_secret):
-    return render(request, 'qr_app/your-qr-page.html', context={
-        'qrImage': reverse('get_qr_from_secret', args=[qr_secret]),
+    ri = get_ri_from_secret(qr_secret)
+    if ri is not None:
+        return render(request, 'qr_app/your-qr-page.html', context={
+            'qr_image': reverse('get_qr_from_secret', args=[qr_secret]),
+            'qr_url': ri.to_url,
         })
+    else:
+        return HttpResponseNotFound('<h1>QR code not found</h1>')
+
+
+def get_ri_from_secret(qr_secret):
+    ri = RedirectItem.objects.filter(secret=qr_secret)
+    if ri.count() > 0:
+        return ri.first()
+    else:
+        return None
 
 
 def get_qr_from_secret(request, qr_secret):
-    ri = RedirectItem.objects.filter(secret=qr_secret)
-    if ri.count() > 0:
-        qr_data_utf8 = ri.first().qr_data_utf8
+    ri = get_ri_from_secret(qr_secret)
+    if ri is not None:
+        qr_data_utf8 = ri.qr_data_utf8
         qr = pyqrcode.create(
             qr_data_utf8, mode='alphanumeric',
             error='L', encoding='UTF-8')
@@ -152,6 +165,8 @@ def get_qr_from_secret(request, qr_secret):
 
         with open(qrfile, "rb") as f:
             return HttpResponse(f.read(), content_type="image/png")
+    else:
+        return HttpResponseNotFound('<h1>QR code not found</h1>')
 
 
 def create_qr(request):
