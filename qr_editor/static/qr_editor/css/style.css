@@ -24,7 +24,7 @@ body {
     margin: 0px;
 }
 
-#popup, #frames {
+.popup, #frames {
     background-color: var(--button-color);
     color: white;
     font-size: 20px;
@@ -41,10 +41,10 @@ body {
     z-index: 2;
     border-radius: 5px;
 }
-#popup {
+.popup {
     display: none;
 }
-#popup h3 {
+.popup h3 {
     line-height: 30px;
 }
 
@@ -87,6 +87,30 @@ body {
     border: none;
     border-radius: 3px;
     transition: 0.2s all;
+}
+
+#close-upload {
+    margin: auto;
+    font-size: 25px;
+    margin-top: 1em;
+}
+
+.form-container {
+    overflow: hidden;
+}
+
+.form-container div {
+    float: left;
+    margin-right: 3em;
+    margin-top: 1em;
+}
+
+#upload-popup {
+    text-align: left;
+}
+
+.num-input {
+    width: 5em;
 }
 
 #close {

@@ -227,14 +227,12 @@ class Canvas {
   }
 
   doImageStep(imageSteps) {
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        let color = [0, 0, 0, 255];
-        if (imageSteps[x*this.width + y] > 0) {
-          color = [255, 255, 255, 255];
-        }
-        this.draw(x, y, color);
+    for (let i = 0; i < imageSteps.length; i++) {
+      let color = [0, 0, 0, 255];
+      if (imageSteps[i][2] > 0) {
+        color = [255, 255, 255, 255];
       }
+      this.draw(imageSteps[i][0], imageSteps[i][1], color);
     }
   }
 
@@ -427,7 +425,75 @@ class Canvas {
     return this.w - (i * 10);
   }
 
-  generateImageStep(file) {
+  generateImageTemp(uimg) {
+    let _this = this;
+    var pxc = document.createElement("canvas");
+    pxc.width = _this.width;
+    pxc.height = _this.height;
+    var pxctx = pxc.getContext("2d");
+    var canvasWidth = _this.getCanvasWidth() / 10;
+    var factor = Math.min(canvasWidth / uimg.width, _this.height / uimg.height);
+    let drawWidth = factor * uimg.width;
+    let drawHeight = factor * uimg.height;
+    let x = _this.width - drawWidth;
+    let y = (_this.height - drawHeight) / 2;
+    pxctx.drawImage(uimg, x, y, drawWidth, drawHeight);
+    var i,j;
+    for (i=0; i<_this.width; i++) {
+      for (j=0; j<_this.height; j++) {
+        var ctr = 0;
+        var avg = [0,0,0,0];
+        var pix = pxctx.getImageData(i, j, 1, 1).data;
+        var color = 0;
+        if ((pix[0]+pix[1]+pix[2]) > (128*3) && pix[3] > 0) {
+          color = 1;
+        }
+        imageSteps.push(color);
+      }
+    }
+    let step = [0, 0, "addImage", imageSteps];
+    _this.steps.push(step);
+    _this.redraw();
+  }
+
+  getPreviewCanvas(uimg) {
+    let _this = this;
+    let x = Number($('#image-x').val()),
+        y = Number($('#image-y').val()),
+        width = Number($('#image-width').val()),
+        height = Number($('#image-height').val());
+    var pxc = document.createElement("canvas");
+    pxc.width = _this.width;
+    pxc.height = _this.height;
+    var pxctx = pxc.getContext("2d");
+    pxctx.fillStyle = "white";
+    pxctx.fillRect(0, 0, pxc.width, pxc.height);
+    pxctx.drawImage(uimg, x, y, width, height);
+
+    var previewCanvas = document.createElement("canvas");
+    previewCanvas.width = _this.width;
+    previewCanvas.height = _this.height;
+    let prvCtx = previewCanvas.getContext("2d");
+
+    for (let yr = 0; yr < _this.height; yr++) {
+      for (let xr = 0; xr < _this.width; xr++) {
+        var pix = pxctx.getImageData(xr, yr, 1, 1).data;
+        if (_this.reserved[xr][yr]) {
+          prvCtx.fillStyle = 'rgb(128,128,128)';
+        } else if ((pix[0] + pix[1] + pix[2]) < (128 * 3)
+                   && pix[3] > 0) {
+          prvCtx.fillStyle = 'rgb(0,0,0)';
+        } else {
+          prvCtx.fillStyle = 'rgb(255,255,255)';
+        }
+        
+        prvCtx.fillRect(xr, yr, 1, 1);
+      }
+    }
+    return previewCanvas;
+  }
+
+  setupImagePopup(file) {
     var _this = this;
     let imageSteps = [];
     var reader = new FileReader();
@@ -436,35 +502,78 @@ class Canvas {
       var uimg = new Image();
       uimg.src = reader.result;
       uimg.onload = function() {
-        var pxc = document.createElement("canvas");
-        pxc.width = _this.width;
-        pxc.height = _this.height;
-        var pxctx = pxc.getContext("2d");
-        var canvasWidth = _this.getCanvasWidth() / 10;
-        var factor = Math.min(canvasWidth / uimg.width, _this.height / uimg.height);
-        let drawWidth = factor * uimg.width;
-        let drawHeight = factor * uimg.height;
-        let x = _this.width - drawWidth;
-        let y = (_this.height - drawHeight) / 2;
-        pxctx.drawImage(uimg, x, y, drawWidth, drawHeight);
-        var i,j;
-        for (i=0; i<_this.width; i++) {
-          for (j=0; j<_this.height; j++) {
-            var ctr = 0;
-            var avg = [0,0,0,0];
-            var pix = pxctx.getImageData(i, j, 1, 1).data;
-            var color = 0;
-            if ((pix[0]+pix[1]+pix[2]) > (128*3) && pix[3] > 0) {
-              color = 1;
+        let uploadPopup = new Popup('#upload-popup');
+        let coords = _this.getStandardCoordinates(uimg);
+        $('#image-x').val(coords[0]);
+        $('#image-y').val(coords[1]);
+        $('#image-width').val(coords[2]);
+        $('#image-height').val(coords[3]);
+        let handleChange = () => {
+          let previewCanvas = _this.getPreviewCanvas(uimg);
+          let canvasContainer = document.getElementById("canvas-container");
+          canvasContainer.innerHTML = "";
+          canvasContainer.appendChild(previewCanvas);
+
+          $("#canvas-container canvas").css('width', '150px');
+          $("#canvas-container canvas").css('height', '150px');
+        }
+        handleChange();
+
+        $('image-x').off('change');
+        $('image-y').off('change');
+        $('image-width').off('change');
+        $('image-height').off('change');
+
+        $('#image-x').change(handleChange);
+        $('#image-y').change(handleChange);
+        $('#image-width').change(handleChange);
+        $('#image-height').change(handleChange);
+
+        let handleOk = () => {
+          let x = Number($('#image-x').val()),
+              y = Number($('#image-y').val()),
+              width = Number($('#image-width').val()),
+              height = Number($('#image-height').val());
+          let previewCanvas = _this.getPreviewCanvas(uimg);
+          let pxctx = previewCanvas.getContext("2d");
+          let imageSteps = [];
+          for (let xr = x; xr < (x + width); xr++) {
+            if (xr > _this.width) {
+              break;
             }
-            imageSteps.push(color);
+            for (let yr = y; yr < (y + height); yr++) {
+              if (yr > _this.width || xr > _this.width) {
+                break;
+              }
+              var ctr = 0;
+              var pix = pxctx.getImageData(xr, yr, 1, 1).data;
+              var color = 0;
+              if ((pix[0]+pix[1]+pix[2]) > (128*3) && pix[3] > 0) {
+                color = 1;
+              }
+              imageSteps.push([xr, yr, color]);
+            }
           }
-    	}
-        let step = [0, 0, "addImage", imageSteps];
-        _this.steps.push(step);
-        _this.redraw();
+          let step = [0, 0, "addImage", imageSteps];
+          _this.steps.push(step);
+          _this.redraw();
+          uploadPopup.close();
+        }
+        $('#close-upload').off('click')
+        $('#close-upload').click(handleOk);
       }
-    }
+    };
+  }
+
+  getStandardCoordinates(uimg) {
+    let _this = this;
+    var canvasWidth = _this.getCanvasWidth() / 10;
+    var factor = Math.min(canvasWidth / uimg.width, _this.height / uimg.height);
+    let drawWidth = factor * uimg.width;
+    let drawHeight = factor * uimg.height;
+    let x = _this.width - drawWidth;
+    let y = (_this.height - drawHeight) / 2;
+    return [x, y, drawWidth, drawHeight].map(Math.round);
   }
   
   addImage() {
@@ -473,8 +582,8 @@ class Canvas {
     fp.type = "file";
     fp.click();
     fp.onchange = e => {
-      let file = e.target.files[0]
-      this.generateImageStep(file);
+      let file = e.target.files[0];
+      this.setupImagePopup(file);
     };
   }
 }
