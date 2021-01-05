@@ -38,8 +38,8 @@ main {
 }
 
 .logo {
-    max-width: 34em;
-    width: 100%;
+    width: 34em;
+    max-width: 85%;
     margin: 3em auto auto;
 }
 
@@ -49,11 +49,13 @@ main {
     font-family: Anton;
     color: #fff;
     font-size: 350%;
+    max-width: 80%;
     box-shadow: 0 16px 0 0 var(--subheader-color);
     background-color: var(--button-color);
     margin-top: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
+    margin-bottom: 1em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
     transition: all .15s;
     transform: translateY(0px);
     border-radius: .1em;
