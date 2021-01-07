@@ -140,3 +140,7 @@ footer a {
     padding: 1em;
     background-color: #AFE2DC;
 }
+
+.qr-image {
+    width: 50%;
+}
