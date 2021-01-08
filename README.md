@@ -3,6 +3,9 @@
 This web app lets users design their own QR codes to any domain. It
 can be acessed on [my-qr.art](https://my-qr.art/).
 
+You can find some more background info about this website on my
+[blog post](https://marienraat.nl/hacking-qr-codes.html).
+
 ## Installing
 
 You'll need python3 and pip. Then install the requirements with:
