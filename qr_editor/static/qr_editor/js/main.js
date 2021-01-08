@@ -514,9 +514,9 @@ class Canvas {
           //Handles aspect ratio
           if($("#image-keep-aspect").is(":checked")){
             if($("#image-width").val() != previousWidth){
-              $("#image-height").val($("#image-height").val() * $("#image-width").val()/previousWidth);
+              $("#image-height").val(Math.round($("#image-height").val() * $("#image-width").val()/previousWidth));
             }else if($("#image-height").val() != previousHeight){
-              $("#image-width").val($("#image-width").val() * $("#image-height").val()/previousHeight);
+              $("#image-width").val($(Math.round("#image-width").val() * $("#image-height").val()/previousHeight));
             }
           }
           previousWidth = $("#image-width").val();
