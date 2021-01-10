@@ -507,8 +507,21 @@ class Canvas {
         $('#image-x').val(coords[0]);
         $('#image-y').val(coords[1]);
         $('#image-width').val(coords[2]);
+        var previousWidth = $("#image-width").val();
         $('#image-height').val(coords[3]);
+        var previousHeight = $("#image-height").val();
         let handleChange = () => {
+          //Handles aspect ratio
+          if($("#image-keep-aspect").is(":checked")){
+            if($("#image-width").val() != previousWidth){
+              $("#image-height").val(Math.round($("#image-height").val() * $("#image-width").val()/previousWidth));
+            }else if($("#image-height").val() != previousHeight){
+              $("#image-width").val($(Math.round("#image-width").val() * $("#image-height").val()/previousHeight));
+            }
+          }
+          previousWidth = $("#image-width").val();
+          previousHeight = $("#image-height").val();
+
           let previewCanvas = _this.getPreviewCanvas(uimg);
           let canvasContainer = document.getElementById("canvas-container");
           canvasContainer.innerHTML = "";

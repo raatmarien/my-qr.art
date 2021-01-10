@@ -107,6 +107,7 @@ body {
 
 #upload-popup {
     text-align: left;
+    max-width: 470;
 }
 
 .num-input {
