@@ -86,8 +86,11 @@ def create_qr_from_array(request):
                 })
 
         design = qrmap.QrMap.from_array(json.loads(request.POST['qrdesign']))
+        urlPrefix = 'HTTPS://MY-QR.ART/R'
+        if 'customUrlPrefix' in request.POST:
+            urlPrefix = request.POST['customUrlPrefix'].upper()
         qr = qrmap.create_qr_from_map(
-            design, 'HTTPS://MY-QR.ART/R', 'alphanumeric', 'L')
+            design, urlPrefix, 'alphanumeric', 'L')
 
         qr_secret = add_qr_redirect(qr, url)
         if qr_secret == False:

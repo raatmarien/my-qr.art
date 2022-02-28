@@ -672,7 +672,13 @@ $(document).ready(function() {
     let url = $("#to-url").val();
     let design = window.board.data;
     let postData = { csrfmiddlewaretoken: csrf_token, qrurl: url, qrdesign: JSON.stringify(design) };
-    
+
+    // Special code to let people set their own url if they really
+    // want to
+    if (window.location.search.startsWith('?customUrlPrefix=')) {
+      postData.customUrlPrefix = window.location.search.split('=')[1];
+    }
+
     $.post("/create_qr_arr/", postData, function(data) {
       if (data.success) {
         window.location.href = data.qr_page;
