@@ -23,6 +23,15 @@ def index(request):
 
 
 def get_qr_template(request):
+    error = 'L'
+    if 'errorCorrectionLevel' in request.POST:
+        error = request.POST['errorCorrectionLevel']
+
+    urlPrefix = 'HTTPS://MY-QR.ART/R'
+    if 'customUrlPrefix' in request.POST:
+        urlPrefix = request.POST['customUrlPrefix'].upper()
+    
+
     qr = qrmap.get_qr_map(int(request.POST['version']),
-                          "alphanumeric", 'L', 'https://my-qr.art/r/')
+                          "alphanumeric", error, urlPrefix)
     return JsonResponse(qr.to_json_rep())

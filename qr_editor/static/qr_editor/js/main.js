@@ -640,6 +640,54 @@ class Frames {
   }
 }
 
+// To parse the query
+// Taken from
+// https://stackoverflow.com/questions/8486099/how-do-i-parse-a-url-query-parameters-in-javascript
+// Different license
+let getJsonFromUrl = function(url) {
+  if(!url) url = location.href;
+  var question = url.indexOf("?");
+  var hash = url.indexOf("#");
+  if(hash==-1 && question==-1) return {};
+  if(hash==-1) hash = url.length;
+  var query = question==-1 || hash==question+1 ? url.substring(hash) : 
+  url.substring(question+1,hash);
+  var result = {};
+  query.split("&").forEach(function(part) {
+    if(!part) return;
+    part = part.split("+").join(" "); // replace every + with space, regexp-free version
+    var eq = part.indexOf("=");
+    var key = eq>-1 ? part.substr(0,eq) : part;
+    var val = eq>-1 ? decodeURIComponent(part.substr(eq+1)) : "";
+    var from = key.indexOf("[");
+    if(from==-1) result[decodeURIComponent(key)] = val;
+    else {
+      var to = key.indexOf("]",from);
+      var index = decodeURIComponent(key.substring(from+1,to));
+      key = decodeURIComponent(key.substring(0,from));
+      if(!result[key]) result[key] = [];
+      if(!index) result[key].push(val);
+      else result[key][index] = val;
+    }
+  });
+  return result;
+};
+
+let enhancePostData = function(postData) {
+  let query = getJsonFromUrl();
+  // Special code to let people set their own url if they really
+  // want to
+  if (query['customUrlPrefix'] != undefined) {
+    postData.customUrlPrefix = query['customUrlPrefix'];
+  }
+  // Special code to change the error correction if people really
+  // want to.
+  if (query['errorCorrectionLevel'] != undefined) {
+    postData.errorCorrectionLevel = query['errorCorrectionLevel'];
+  }
+  return postData;
+};
+
 $(document).ready(function() {
   $("#close").click(function () { 
     $('#close').attr("disabled", true);
@@ -651,6 +699,8 @@ $(document).ready(function() {
     let version = $('#version').val();
     let csrf_token = $("#popup").find("[name='csrfmiddlewaretoken']").val();
     let postData = { csrfmiddlewaretoken: csrf_token, version: version };
+
+    postData = enhancePostData(postData);
 
     $.post("/editor/get_qr_template", postData, function (data) {
       window.board = new Canvas(data.width, data.height);
@@ -672,12 +722,7 @@ $(document).ready(function() {
     let url = $("#to-url").val();
     let design = window.board.data;
     let postData = { csrfmiddlewaretoken: csrf_token, qrurl: url, qrdesign: JSON.stringify(design) };
-
-    // Special code to let people set their own url if they really
-    // want to
-    if (window.location.search.startsWith('?customUrlPrefix=')) {
-      postData.customUrlPrefix = window.location.search.split('=')[1];
-    }
+    postData = enhancePostData(postData);
 
     $.post("/create_qr_arr/", postData, function(data) {
       if (data.success) {

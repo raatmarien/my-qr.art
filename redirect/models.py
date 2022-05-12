@@ -35,6 +35,7 @@ class RedirectItem(models.Model):
     to_url = models.CharField(max_length=1000)
     created_at = models.DateTimeField()
     visits = models.IntegerField(default=0)
+    errorCorrectionLevel = models.CharField(max_length=1, default='L')
 
     def __str__(self):
         return f'"{self.from_identifier[:100]}" --> "{self.to_url}"'

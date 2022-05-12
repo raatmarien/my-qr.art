@@ -51,7 +51,7 @@ def save_file(f):
     return filename
 
 
-def add_qr_redirect(qr, url):
+def add_qr_redirect(qr, url, error):
     index = qr.data.index(b'/R/')
     ident = qr.data[index+3:-3]
     from_identifier = ident.decode('UTF-8')
@@ -66,7 +66,7 @@ def add_qr_redirect(qr, url):
         qr_data_utf8=qr.data.decode('UTF-8'),
         from_identifier=from_identifier, to_url=url,
         created_at=datetime.datetime.now(),
-        secret=qr_secret)
+        secret=qr_secret, errorCorrectionLevel=error)
     r.save()
 
     return qr_secret
@@ -86,13 +86,19 @@ def create_qr_from_array(request):
                 })
 
         design = qrmap.QrMap.from_array(json.loads(request.POST['qrdesign']))
+
+        error = 'L'
+        if 'errorCorrectionLevel' in request.POST:
+            error = request.POST['errorCorrectionLevel']
+
         urlPrefix = 'HTTPS://MY-QR.ART/R'
         if 'customUrlPrefix' in request.POST:
             urlPrefix = request.POST['customUrlPrefix'].upper()
-        qr = qrmap.create_qr_from_map(
-            design, urlPrefix, 'alphanumeric', 'L')
 
-        qr_secret = add_qr_redirect(qr, url)
+        qr = qrmap.create_qr_from_map(
+            design, urlPrefix, 'alphanumeric', error)
+
+        qr_secret = add_qr_redirect(qr, url, error)
         if qr_secret == False:
             return JsonResponse({
                 "success": False,
@@ -134,7 +140,7 @@ def get_qr_from_secret(request, qr_secret):
         qr_data_utf8 = ri.qr_data_utf8
         qr = pyqrcode.create(
             qr_data_utf8, mode='alphanumeric',
-            error='L', encoding='UTF-8')
+            error=ri.errorCorrectionLevel, encoding='UTF-8')
         
         qrfile = get_temp_name()
         qr.png(qrfile, scale=5)
