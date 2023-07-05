@@ -1,3 +1,5 @@
 fontawesome-free==5.15.1
 django==3.1.8
 pypng==0.0.20
+qrcodegen
+segno

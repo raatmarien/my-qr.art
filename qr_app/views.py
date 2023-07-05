@@ -26,6 +26,10 @@ import json
 import base64
 import secrets
 
+from qrcodegen import QrCode, QrSegment
+import segno
+
+
 import qr_app.qrmap as qrmap
 from .forms import CreateQRForm
 
@@ -51,21 +55,20 @@ def save_file(f):
     return filename
 
 
-def add_qr_redirect(qr, url, error):
-    index = qr.data.index(b'/R/')
-    ident = qr.data[index+3:-3]
-    from_identifier = ident.decode('UTF-8')
+def add_qr_redirect(numbers, mistake_bit_numbers, url, prefix, error, version):
     pre_existing = RedirectItem.objects.filter(
-        qr_data_utf8=qr.data.decode('UTF-8'))
+        qr_data_utf8=numbers)
     if pre_existing.count() > 0:
         return False
 
     qr_secret = secrets.token_hex(10)
 
     r = RedirectItem.objects.create(
-        qr_data_utf8=qr.data.decode('UTF-8'),
-        from_identifier=from_identifier, to_url=url,
+        qr_data_utf8=prefix + numbers,
+        from_identifier=numbers, to_url=url,
+        mistakes=json.dumps(mistake_bit_numbers),
         created_at=datetime.datetime.now(),
+        internal_item_version=1, version=version,
         secret=qr_secret, errorCorrectionLevel=error)
     r.save()
 
@@ -88,17 +91,18 @@ def create_qr_from_array(request):
         design = qrmap.QrMap.from_array(json.loads(request.POST['qrdesign']))
 
         error = 'L'
-        if 'errorCorrectionLevel' in request.POST:
-            error = request.POST['errorCorrectionLevel']
+        # if 'errorCorrectionLevel' in request.POST:
+        #     error = request.POST['errorCorrectionLevel']
 
-        urlPrefix = 'HTTPS://MY-QR.ART/R'
+        urlPrefix = 'https://my-qr.art/r/'
         if 'customUrlPrefix' in request.POST:
-            urlPrefix = request.POST['customUrlPrefix'].upper()
+            urlPrefix = request.POST['customUrlPrefix'] + '/'
 
-        qr = qrmap.create_qr_from_map(
-            design, urlPrefix, 'alphanumeric', error)
+        (qr, numbers, mistake_bit_numbers) = qrmap.create_qr_from_map(
+            design, urlPrefix)
 
-        qr_secret = add_qr_redirect(qr, url, error)
+        qr_secret = add_qr_redirect(numbers, mistake_bit_numbers, url,
+                                    urlPrefix, error, qr.version)
         if qr_secret == False:
             return JsonResponse({
                 "success": False,
@@ -139,16 +143,45 @@ def get_ri_from_secret(qr_secret):
 def get_qr_from_secret(request, qr_secret):
     ri = get_ri_from_secret(qr_secret)
     if ri is not None:
-        qr_data_utf8 = ri.qr_data_utf8
-        qr = pyqrcode.create(
-            qr_data_utf8, mode='alphanumeric',
-            error=ri.errorCorrectionLevel, encoding='UTF-8')
+        if ri.internal_item_version == 0:
+            qr_data_utf8 = ri.qr_data_utf8
+            qr = pyqrcode.create(
+                qr_data_utf8, mode='alphanumeric',
+                error=ri.errorCorrectionLevel, encoding='UTF-8')
         
-        qrfile = get_temp_name()
-        qr.png(qrfile, scale=5)
+            qrfile = get_temp_name()
+            qr.png(qrfile, scale=5)
 
-        with open(qrfile, "rb") as f:
-            return HttpResponse(f.read(), content_type="image/png")
+            with open(qrfile, "rb") as f:
+                return HttpResponse(f.read(), content_type="image/png")
+
+        else:
+            data = ri.qr_data_utf8
+            index = data.rfind('/')
+            url = data[:(index+1)]
+            numbers = data[(index+1):]
+            qrsegments = [
+                QrSegment.make_bytes(url.encode('UTF-8')),
+                QrSegment.make_numeric(numbers)
+            ]
+            print(url)
+            print(numbers)
+
+            qr = QrCode.encode_segments(
+                qrsegments,
+                QrCode.Ecc.LOW,
+                boostecl=False,
+                minversion=ri.version,
+                maxversion=ri.version,
+                mask=1)
+            fixed = qrmap.fix_mistakes(qr, json.loads(ri.mistakes),
+                ri.version, url)
+
+            qrfile = get_temp_name()
+            fixed.save(qrfile, scale=5)
+            
+            with open(qrfile, "rb") as f:
+                return HttpResponse(f.read(), content_type="image/png")
     else:
         return HttpResponseNotFound('<h1>QR code not found</h1>')
 

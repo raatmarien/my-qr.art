@@ -32,10 +32,13 @@ class RedirectItem(models.Model):
     qr_data_utf8 = models.CharField(max_length=7000)
     secret = models.CharField(max_length=10)
     from_identifier = models.CharField(max_length=7000)
+    mistakes = models.CharField(max_length=7000, default='')
     to_url = models.CharField(max_length=1000)
     created_at = models.DateTimeField()
     visits = models.IntegerField(default=0)
     errorCorrectionLevel = models.CharField(max_length=1, default='L')
+    internal_item_version = models.IntegerField(default=0)
+    version = models.IntegerField(default=0)
 
     def __str__(self):
         return f'"{self.from_identifier[:100]}" --> "{self.to_url}"'

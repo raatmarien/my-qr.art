@@ -17,6 +17,9 @@ import qr_app.tables as t
 import png
 import qr_app.pyqrcode as pyqrcode
 from enum import Enum
+import math
+from qrcodegen import QrCode, QrSegment
+import segno
 
 
 class ModuleType(Enum):
@@ -182,7 +185,7 @@ def get_path(qr, allowed_modules=[ModuleType.AVAILABLE]):
                     x += 1
 
 
-def get_qr_path(version, mode, error, url):
+def get_qr_path(version, error, url):
     qr = QrMap(version)
 
     # Add finder patterns and seperators and format info area
@@ -218,24 +221,25 @@ def get_qr_path(version, mode, error, url):
     return get_path(qr)
 
 
-def get_qr_map(version, mode='binary', error='L', url=''):
+def get_qr_map(version, error='L', url=''):
     """Returns a 2d array of the size of an qr code of the version.
     Where we can write data it puts True. Everywhere else is False.
     """
-    path = interleave_path(get_qr_path(version, mode, error, url),
+    path = interleave_path(get_qr_path(version, error, url),
                            version, error)
     final_qr = QrMap(version, ModuleType.BLOCKED)
 
-    mode_size = 4
+    mode_size = 8
     dlversion = 9
     if version > 9:
         dlversion = 26
     if version > 26:
         dlversion = 40
-    count_size = t.data_length_field[dlversion][t.modes[mode]]
-    url_size = (int(len(url) / 2.0 * 11.0)
-                if mode == 'alphanumeric'
-                else (len(url) * 8))
+    # Two counts, because we start numeric, but the random part should
+    # be numeric
+    lengths = t.data_length_field[dlversion]
+    count_size = lengths[t.modes['numeric']] + lengths[t.modes['binary']]
+    url_size = (len(url) * 8)
     skipped = mode_size + count_size + url_size
 
     data_size = t.data_capacity[version][error][0]
@@ -250,30 +254,26 @@ def get_qr_map(version, mode='binary', error='L', url=''):
 
 
 def get_error_reserved_map(version, mode='binary', error='L', url=''):
-    path = get_qr_path(version, mode, error, url)
+    path = get_qr_path(version, error, url)
     final_qr = QrMap(version, ModuleType.AVAILABLE)
     data_size = t.data_capacity[version][error][0]
     e = t.eccwbi[version][error]
     error_size = 8 * (e[0] * e[1] + e[0] * e[2])
 
-    print(path)
-    print(len(path))
-    print(data_size)
-    print(error_size)
     for (x, y) in path[data_size:(data_size+error_size)]:
         final_qr.set(x, y, ModuleType.RESERVED)
 
     return final_qr
 
 def get_qr_map_with_hints(version, mode='binary', error='L', url=''):
-    qrmap = get_qr_map(version, mode, error, url)
+    qrmap = get_qr_map(version, error, url)
     error_map = get_error_reserved_map(version, mode, error, url)
-    qr = create_qr_from_map(qrmap, url, mode, error)
-    map_with_hints = QrMap(qr.version)
+    (qr, numbers, mistakes) = create_qr_from_map(qrmap, url)
+    map_with_hints = QrMap(version)
     for y in range(qrmap.size):
         for x in range(qrmap.size):
             if qrmap.get(x, y) != ModuleType.AVAILABLE:
-                if qr.code[y][x] == 0 or error_map.get(x, y) == ModuleType.RESERVED:
+                if qr.matrix[y][x] == 0 or error_map.get(x, y) == ModuleType.RESERVED:
                     map_with_hints.set(x, y, ModuleType.BLOCKED)
                 else:
                     map_with_hints.set(x, y, ModuleType.RESERVED)
@@ -307,9 +307,19 @@ def interleave_path(path, version, error):
     return interleaved_path
 
 
-def get_raw_qr_data(design, error='L', mode='binary'):
+def interleaved_path(version, url, error):
+    qrmap = get_qr_map(version, error, url)
+
+    # We take the path with the reserved parts,
+    # because we need to interleave it.
+    path = get_path(qrmap, [ModuleType.AVAILABLE, ModuleType.RESERVED])
+
+    return interleave_path(
+        path, version, error)
+
+def get_raw_qr_data(design, url, error='L'):
     version = design.get_version()
-    qrmap = get_qr_map(version, error=error, mode=mode)
+    qrmap = get_qr_map(version, error, url)
 
     # We take the path with the reserved parts,
     # because we need to interleave it.
@@ -328,16 +338,53 @@ def get_raw_qr_data(design, error='L', mode='binary'):
 
     return (data, version)
 
-def create_qr_from_map(design, url, mode, error):
-    (bits, version) = get_raw_qr_data(design, error, mode)
-    string = (bitstring_to_bin(bits) if mode == 'binary'
-              else bitstring_to_alphanumeric(bits))
-    with_url = url + '/' + string[(len(url)+1):]
-    qr = pyqrcode.create(with_url, error=error, mode=mode, version=version)
-    return qr
+def create_qr_from_map(design, url):
+    (bits, version) = get_raw_qr_data(design, url, 'L')
+
+    [numbers, mistake_bit_numbers] = bitstring_to_numeric(bits)
+    qrsegments = [
+        QrSegment.make_bytes(url.encode('UTF-8')),
+        QrSegment.make_numeric(numbers)
+        ]
+
+    qr = QrCode.encode_segments(
+        qrsegments,
+        QrCode.Ecc.LOW,
+        boostecl=False,
+        minversion=version,
+        maxversion=version,
+        mask=1)
+
+    return (
+        fix_mistakes(qr, mistake_bit_numbers, version, url),
+        numbers,
+        mistake_bit_numbers)
+
+def fix_mistakes(qr, mistake_numbers, version, url):
+    qrmap = get_qr_map(version, 'L', url)
+    path = interleaved_path(version, url, 'L')
+    fixed_qr = segno.make_qr('', error='l', mode='byte',
+                             mask=1, version=version,
+                             boost_error=False)
+
+    for x in range(qrmap.size):
+        for y in range(qrmap.size):
+            fixed_qr.matrix[y][x] = 1 if qr.get_module(x, y) else 0
+
+    i = 0
+    for (x, y) in path:
+        if qrmap.get(x, y) == ModuleType.AVAILABLE:
+            if i in mistake_numbers:
+                if fixed_qr.matrix[y][x] == 0:
+                    fixed_qr.matrix[y][x] = 1
+                else:
+                    fixed_qr.matrix[y][x] = 0
+            i += 1
+
+    return fixed_qr
 
 def create_qr_from_design(filename, url, mode, error):
-    return create_qr_from_map(QrMap.read(filename), url, mode, error)
+    return create_qr_from_map(QrMap.read(filename), url)
 
 def bitstring_to_bytes(s):
     b = bytearray()
@@ -350,6 +397,45 @@ def find_table_char(num):
     for c, n in t.ascii_codes.items():
         if num == n:
             return c
+
+
+def bitstring_to_numeric(s):
+    mistake_bit_numbers = []
+    numbers = ''
+
+    i = 0
+    while len(s) > 9:
+        s = s[10:]
+        transcode_part = s[:10]
+        representation_number = int(transcode_part, 2)
+
+        # Can't represent 4 digit numbers
+        if representation_number > 999:
+            representation_number = representation_number - 512
+            mistake_bit_numbers.append(i)
+
+        numbers += str(representation_number).zfill(3)
+        i += 10
+
+    if len(s) > 6:
+        s = s[7:]
+        rep = int(s[:7], 2)
+        if rep > 99:
+            rep -= 64
+            mistakes_bit_numbers.append(i)
+
+        numbers += str(rep).zfill(2)
+        i += 7
+
+    if len(s) > 3:
+        rep = int(s[:4], 2)
+        if rep > 9:
+            rep -= 8
+            mistake_bit_numbers.append(i)
+
+        numbers += str(rep)
+
+    return (numbers, mistake_bit_numbers)
 
 def bitstring_to_alphanumeric(s):
     text = ''
@@ -367,6 +453,7 @@ def bitstring_to_alphanumeric(s):
         text += find_table_char(num)
 
     return text
+
 
 def bitstring_to_bin(s):
     return bitstring_to_bytes(s).decode('ISO 8859-1')

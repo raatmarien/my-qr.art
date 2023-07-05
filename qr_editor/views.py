@@ -27,12 +27,12 @@ def get_qr_template(request):
     if 'errorCorrectionLevel' in request.POST:
         error = request.POST['errorCorrectionLevel']
 
-    urlPrefix = 'HTTPS://MY-QR.ART/R'
+    urlPrefix = 'https://my-qr.art/r/'
     if 'customUrlPrefix' in request.POST:
-        urlPrefix = request.POST['customUrlPrefix'].upper()
+        urlPrefix = request.POST['customUrlPrefix'] + '/'
     
 
     template = qrmap.get_qr_map_with_hints(
         int(request.POST['version']),
-        "alphanumeric", error, urlPrefix)
+        "binary", error, urlPrefix)
     return JsonResponse(template.to_json_rep())
