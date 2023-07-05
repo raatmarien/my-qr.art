@@ -32,6 +32,7 @@ def get_qr_template(request):
         urlPrefix = request.POST['customUrlPrefix'].upper()
     
 
-    qr = qrmap.get_qr_map(int(request.POST['version']),
-                          "alphanumeric", error, urlPrefix)
-    return JsonResponse(qr.to_json_rep())
+    template = qrmap.get_qr_map_with_hints(
+        int(request.POST['version']),
+        "alphanumeric", error, urlPrefix)
+    return JsonResponse(template.to_json_rep())

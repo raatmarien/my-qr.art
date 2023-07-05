@@ -56,6 +56,7 @@ class Canvas {
     this.ctx.fillRect(0, 0, this.w, this.h);
     this.data = [...Array(this.width)].map(e => Array(this.height).fill([255, 255, 255, 255]));
     this.reserved = [...Array(this.width)].map(e => Array(this.height).fill(false));
+    this.reserved_black = [...Array(this.width)].map(e => Array(this.height).fill(false));
     this.reservedSet = false;
     this.steps = [];
     this.redo_arr = [];
@@ -131,6 +132,7 @@ class Canvas {
         let i = y * this.width + x;
         if (map[i] != 1) {
           this.reserved[x][y] = true;
+          this.reserved_black[x][y] = map[i] != 0;
         }
       }
     }
@@ -141,7 +143,13 @@ class Canvas {
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         if (this.reserved[x][y]) {
-          this.draw(x, y, [128, 128, 128, 255]);
+          if (this.reserved_black[x][y]) {
+            let g = 100;
+            this.draw(x, y, [g, g, g, 255]);
+          } else {
+            let g = 150;
+            this.draw(x, y, [g, g, g, 255]);
+          }
         }
       }
     }

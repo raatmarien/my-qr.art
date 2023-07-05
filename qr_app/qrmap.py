@@ -182,10 +182,7 @@ def get_path(qr, allowed_modules=[ModuleType.AVAILABLE]):
                     x += 1
 
 
-def get_qr_map(version, mode='binary', error='L', url=''):
-    """Returns a 2d array of the size of an qr code of the version.
-    Where we can write data it puts True. Everywhere else is False.
-    """
+def get_qr_path(version, mode, error, url):
     qr = QrMap(version)
 
     # Add finder patterns and seperators and format info area
@@ -218,7 +215,15 @@ def get_qr_map(version, mode='binary', error='L', url=''):
         add_rect(qr, qr.size - finder_size - 3, 0, 3, 6)
         add_rect(qr, 0, qr.size - finder_size - 3, 6, 3)
 
-    path = interleave_path(get_path(qr), version, error)
+    return get_path(qr)
+
+
+def get_qr_map(version, mode='binary', error='L', url=''):
+    """Returns a 2d array of the size of an qr code of the version.
+    Where we can write data it puts True. Everywhere else is False.
+    """
+    path = interleave_path(get_qr_path(version, mode, error, url),
+                           version, error)
     final_qr = QrMap(version, ModuleType.BLOCKED)
 
     mode_size = 4
@@ -242,6 +247,39 @@ def get_qr_map(version, mode='binary', error='L', url=''):
         final_qr.set(x, y, ModuleType.AVAILABLE)
 
     return final_qr
+
+
+def get_error_reserved_map(version, mode='binary', error='L', url=''):
+    path = get_qr_path(version, mode, error, url)
+    final_qr = QrMap(version, ModuleType.AVAILABLE)
+    data_size = t.data_capacity[version][error][0]
+    e = t.eccwbi[version][error]
+    error_size = 8 * (e[0] * e[1] + e[0] * e[2])
+
+    print(path)
+    print(len(path))
+    print(data_size)
+    print(error_size)
+    for (x, y) in path[data_size:(data_size+error_size)]:
+        final_qr.set(x, y, ModuleType.RESERVED)
+
+    return final_qr
+
+def get_qr_map_with_hints(version, mode='binary', error='L', url=''):
+    qrmap = get_qr_map(version, mode, error, url)
+    error_map = get_error_reserved_map(version, mode, error, url)
+    qr = create_qr_from_map(qrmap, url, mode, error)
+    map_with_hints = QrMap(qr.version)
+    for y in range(qrmap.size):
+        for x in range(qrmap.size):
+            if qrmap.get(x, y) != ModuleType.AVAILABLE:
+                if qr.code[y][x] == 0 or error_map.get(x, y) == ModuleType.RESERVED:
+                    map_with_hints.set(x, y, ModuleType.BLOCKED)
+                else:
+                    map_with_hints.set(x, y, ModuleType.RESERVED)
+            else:
+                map_with_hints.set(x, y, ModuleType.AVAILABLE)
+    return map_with_hints
 
 
 def get_qr_template(version, filename='qrtemplate.png', mode='binary', error='L'):
