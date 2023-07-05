@@ -39,8 +39,8 @@ def index(request):
 def copyright(request):
     return render(request, 'qr_app/copyright.html', {});
 
-def get_temp_name():
-    return '/tmp/' + next(tempfile._get_candidate_names()) + '.png'
+def get_temp_name(extension='.png'):
+    return '/tmp/' + next(tempfile._get_candidate_names()) + extension
 
 
 def save_file(f):
@@ -120,6 +120,8 @@ def get_your_qr_page(request, qr_secret):
     if ri is not None:
         return render(request, 'qr_app/your-qr-page.html', context={
             'qr_image': reverse('get_qr_from_secret', args=[qr_secret]),
+            'qr_image_svg': reverse('get_qr_from_secret_svg', args=[qr_secret]),
+            'qr_image_eps': reverse('get_qr_from_secret_eps', args=[qr_secret]),
             'qr_url': ri.to_url,
         })
     else:
@@ -147,5 +149,39 @@ def get_qr_from_secret(request, qr_secret):
 
         with open(qrfile, "rb") as f:
             return HttpResponse(f.read(), content_type="image/png")
+    else:
+        return HttpResponseNotFound('<h1>QR code not found</h1>')
+
+
+def get_qr_from_secret_svg(request, qr_secret):
+    ri = get_ri_from_secret(qr_secret)
+    if ri is not None:
+        qr_data_utf8 = ri.qr_data_utf8
+        qr = pyqrcode.create(
+            qr_data_utf8, mode='alphanumeric',
+            error=ri.errorCorrectionLevel, encoding='UTF-8')
+        
+        qrfile = get_temp_name('.svg')
+        qr.svg(qrfile, scale=5)
+
+        with open(qrfile, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/svg+xml")
+    else:
+        return HttpResponseNotFound('<h1>QR code not found</h1>')
+
+
+def get_qr_from_secret_eps(request, qr_secret):
+    ri = get_ri_from_secret(qr_secret)
+    if ri is not None:
+        qr_data_utf8 = ri.qr_data_utf8
+        qr = pyqrcode.create(
+            qr_data_utf8, mode='alphanumeric',
+            error=ri.errorCorrectionLevel, encoding='UTF-8')
+        
+        qrfile = get_temp_name('.eps')
+        qr.eps(qrfile, scale=5)
+
+        with open(qrfile, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/eps")
     else:
         return HttpResponseNotFound('<h1>QR code not found</h1>')

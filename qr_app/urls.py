@@ -20,7 +20,15 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('copyright/', views.copyright, name='copyright'),
-    path('your-qr-image/<str:qr_secret>', views.get_qr_from_secret, name='get_qr_from_secret'),
+    path('your-qr-image/<str:qr_secret>',
+         views.get_qr_from_secret,
+         name='get_qr_from_secret'),
+    path('your-qr-image-svg/<str:qr_secret>',
+         views.get_qr_from_secret_svg,
+         name='get_qr_from_secret_svg'),
+    path('your-qr-image-eps/<str:qr_secret>',
+         views.get_qr_from_secret_eps,
+         name='get_qr_from_secret_eps'),
     path('your-qr/<str:qr_secret>', views.get_your_qr_page, name='get_your_qr_page'),
     path('create_qr_arr/', views.create_qr_from_array, name='create_qr_from_array'),
 ]
