@@ -406,6 +406,7 @@ class Canvas {
       'redo_arr': this.redo_arr,
       'dim': window.dim,
       'reserved': this.reserved,
+      'reserved_black': this.reserved_black,
     }
     localStorage.setItem('pc-canvas-data', JSON.stringify(d));
   }
@@ -770,6 +771,7 @@ $(document).ready(function() {
     window.colors = data.colors;
     window.board = new Canvas(data.width, data.height);
     window.board.reserved = data.reserved;
+    window.board.reserved_black = data.reserved_black ? data.reserved_black : data.reserved;
     let img = new Image();
     img.setAttribute('src', data.url);
     img.addEventListener("load", function () {
