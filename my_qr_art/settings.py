@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'redirect.apps.RedirectConfig',
     'qr_app.apps.QrAppConfig',
     'qr_editor.apps.QrEditorConfig',
-    'fontawesome-free',
+    'my_qr_art.fa_config.FontAwesomeFreeConfig',
 ]
 
 MIDDLEWARE = [

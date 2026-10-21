@@ -18,15 +18,15 @@ from django.http import HttpResponseRedirect
 from urllib.parse import unquote
 
 from .models import RedirectItem, to_from_identifier
+import re
 
 
 def redirect_action(request):
-    # 3 to cut off the /R/
-    path = unquote(request.get_full_path())[3:]
-    # Apache makes this /r/ at the end replacing the last 3 characters
-    # for some reason. So we cut off the last three characters. We
-    # need to do the same when saving urls
-    path = path[:-3]
+    # Raw request line as the client sent it, before any decoding
+    raw = request.META.get("REQUEST_URI") or request.get_full_path()
+    path = raw.split("?", 1)[0][3:-3]            # cut off the query string and "/R/" and the last three chars
+    path = re.sub(r"%20", "", path, flags=re.I)  # encoded spaces were stripped before
+    path = unquote(path)                        # %93 etc. decoded once
 
     from_identifier = to_from_identifier(path)
     matches = RedirectItem.objects.filter(from_identifier=from_identifier)
